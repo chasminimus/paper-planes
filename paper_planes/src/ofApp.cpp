@@ -1,18 +1,28 @@
 #include "ofApp.h"
 
+ofxAssimpModelLoader model;
+
 //--------------------------------------------------------------
-void ofApp::setup(){
+void ofApp::setup() {
+	model.loadModel("..\\model\\paper_plane.obj");
+}
+
+//--------------------------------------------------------------
+void ofApp::update() {
 
 }
 
 //--------------------------------------------------------------
-void ofApp::update(){
+void ofApp::draw() {
+	ofBackground(50, 50, 50, 0);
+	ofSetColor(255, 255, 255, 255);
 
-}
-
-//--------------------------------------------------------------
-void ofApp::draw(){
-
+	model.setPosition(ofGetWidth() * 2 / 6, (float)ofGetHeight() * 0.75, 0);
+	model.draw(OF_MESH_FILL); //same as model.drawFaces();
+	model.setPosition(ofGetWidth() * 3 / 6, (float)ofGetHeight() * 0.75, 0);
+	model.draw(OF_MESH_POINTS); // same as model.drawVertices();
+	model.setPosition(ofGetWidth() * 4 / 6, (float)ofGetHeight() * 0.75, 0);
+	model.draw(OF_MESH_WIREFRAME); // same as model.drawWireframe();
 }
 
 //--------------------------------------------------------------
