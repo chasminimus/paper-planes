@@ -9,7 +9,7 @@ void ofApp::setup() {
 	model.loadModel("model/paper_plane.obj");
 	// set up camera
 	camEasy.setTarget(node_paper_planes);
-	camEasy.setDistance(100);
+	camEasy.setDistance(25);
 	camEasy.setNearClip(10);
 	camEasy.setFarClip(10000);
 
@@ -26,7 +26,8 @@ void ofApp::draw() {
 	ofBackground(50, 50, 50, 0);
 	camEasy.begin();
 	ofSetColor(255, 255, 255, 255);
-	
+	ofDrawRotationAxes(MAX_RADIUS, 0.1f);
+	ofDrawGrid(2.0f, 10, true, true, true, true);
 	node_paper_planes.customDraw();
 	camEasy.end();
 }

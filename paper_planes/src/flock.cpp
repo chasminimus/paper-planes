@@ -3,6 +3,8 @@
 Flock::Flock() {
 	light.setAmbientColor(ofColor(128.0f, 0, 0));
 	cone.set(.5f, 1.0f);
+	cone.rollDeg(90.0f);
+	//cone.tiltDeg(90.0f);
 	//cone.rotateDeg() // rotate cone be properly oriented when pointing
 }
 
@@ -46,7 +48,7 @@ void Flock::customDraw() {
 	light.setPosition(ofVec3f(0, 0, 0));
 	for (unsigned int i = 0; i < planes.size(); i++) {
 		cone.setPosition(planes[i].position);
-		cone.lookAt(planes[i].position + planes[i].velocity);
+		//cone.lookAt(planes[i].position + planes[i].velocity);
 		cone.draw();
 	}
 
