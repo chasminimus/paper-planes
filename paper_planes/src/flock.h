@@ -12,11 +12,11 @@ class Flock : public ofNode {
 		ofVec3f velocity;
 		ofVec3f acceleration;
 	};
-	class PointedCone : public ofNode {
-		void customDraw();
-	};
+	
+	ofConePrimitive cone;
 
 	ofxAssimpModelLoader model;
+
 public: 
 	Flock();
 	void init(int n_planes);
@@ -28,5 +28,3 @@ protected:
 	void update();
 	vector<paper_plane> planes;
 };
-
-// helper functions

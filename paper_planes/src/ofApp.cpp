@@ -4,6 +4,8 @@ ofxAssimpModelLoader model;
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+	ofEnableDepthTest();
+	ofEnableSmoothing();
 	model.loadModel("model/paper_plane.obj");
 	// set up camera
 	camEasy.setTarget(node_paper_planes);
