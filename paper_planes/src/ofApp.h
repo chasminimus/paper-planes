@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxAssimpModelLoader.h"
+#include "flock.h"
 
 class ofApp : public ofBaseApp{
 
@@ -22,4 +23,6 @@ class ofApp : public ofBaseApp{
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
 		
+		ofEasyCam camEasy;
+		Flock node_paper_planes;
 };

@@ -4,7 +4,14 @@ ofxAssimpModelLoader model;
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	model.loadModel("..\\model\\paper_plane.obj");
+	model.loadModel("model/paper_plane.obj");
+	// set up camera
+	camEasy.setTarget(node_paper_planes);
+	camEasy.setDistance(100);
+	camEasy.setNearClip(10);
+	camEasy.setFarClip(10000);
+
+	node_paper_planes.init(50);
 }
 
 //--------------------------------------------------------------
@@ -15,14 +22,11 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
 	ofBackground(50, 50, 50, 0);
+	camEasy.begin();
 	ofSetColor(255, 255, 255, 255);
-
-	model.setPosition(ofGetWidth() * 2 / 6, (float)ofGetHeight() * 0.75, 0);
-	model.draw(OF_MESH_FILL); //same as model.drawFaces();
-	model.setPosition(ofGetWidth() * 3 / 6, (float)ofGetHeight() * 0.75, 0);
-	model.draw(OF_MESH_POINTS); // same as model.drawVertices();
-	model.setPosition(ofGetWidth() * 4 / 6, (float)ofGetHeight() * 0.75, 0);
-	model.draw(OF_MESH_WIREFRAME); // same as model.drawWireframe();
+	
+	node_paper_planes.customDraw();
+	camEasy.end();
 }
 
 //--------------------------------------------------------------
