@@ -34,6 +34,7 @@ I've done flocking before in just 2D using JavaScript and p5.js, so the ideas at
 - Implement more complicated dynamics
   - 'Predator' planes (uh, pretend it makes sense) that will hunt normal planes which in turn try to steer away from predators
   - Food objects for planes to seek for
+    - Eating food increases a plane's mass which makes their acceleration lower and the plane more susceptible to predators
   - Different colors/groups of planes that try to stay with/avoid those of the same group
   - Extra extra ideas
     - Planes can 'remember' things that affects their steering

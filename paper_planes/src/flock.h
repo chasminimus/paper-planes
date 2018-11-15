@@ -2,11 +2,18 @@
 #include "ofMain.h"
 #include "ofxAssimpModelLoader.h"
 
+const int MAX_RADIUS = 20;
+const int POSITION_DISPERSION = 10;
+const int VELOCITY_DISPERSION = 5;
+
 class Flock : public ofNode {
 	struct paper_plane {
 		ofVec3f position;
 		ofVec3f velocity;
 		ofVec3f acceleration;
+	};
+	class PointedCone : public ofNode {
+		void customDraw();
 	};
 
 	ofxAssimpModelLoader model;
@@ -21,3 +28,5 @@ protected:
 	void update();
 	vector<paper_plane> planes;
 };
+
+// helper functions

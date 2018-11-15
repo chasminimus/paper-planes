@@ -17,13 +17,13 @@ void Flock::init(int n_planes) {
 	ofVec3f acceleration(0, 0, 0); //linear motion for now
 
 	for (int i = 0; i < n_planes; i++) {
-		position.x = (ofRandom(1.0f) - 0.5f);
-		position.y = (ofRandom(1.0f) - 0.5f);
-		position.z = (ofRandom(1.0f) - 0.5f);
+		position.x = (ofRandom(1.0f) - 0.5f) * POSITION_DISPERSION;
+		position.y = (ofRandom(1.0f) - 0.5f) * POSITION_DISPERSION;
+		position.z = (ofRandom(1.0f) - 0.5f) * POSITION_DISPERSION;
 		
-		velocity.x = (ofRandom(1.0f) - 0.5f);
-		velocity.y = (ofRandom(1.0f) - 0.5f);
-		velocity.z = (ofRandom(1.0f) - 0.5f);
+		velocity.x = (ofRandom(1.0f) - 0.5f) * VELOCITY_DISPERSION;
+		velocity.y = (ofRandom(1.0f) - 0.5f) * VELOCITY_DISPERSION;
+		velocity.z = (ofRandom(1.0f) - 0.5f) * VELOCITY_DISPERSION;
 
 		paper_plane plane;
 		plane.position = position;
@@ -43,7 +43,7 @@ void Flock::customDraw() {
 	light.enable();
 	light.setPosition(ofVec3f(0, 0, 0));
 	for (unsigned int i = 0; i < planes.size(); i++) {
-		ofDrawSphere(planes[i].position, 1.0); //improvise for now
+		ofDrawCone(planes[i].position, 0.5f, 1.0f); //improvise for now
 	}
 
 	light.disable();
@@ -66,5 +66,13 @@ void Flock::update() {
 		// in the future, acceleration will be non-zero
 		// the flocking rules will be called here to change accel
 		planes[i].velocity += planes[i].acceleration * dt;
+
+		if (planes[i].position.lengthSquared() >= MAX_RADIUS * MAX_RADIUS) {
+			planes[i].velocity = -planes[i].velocity;
+		}
 	}
+}
+
+void Flock::PointedCone::customDraw() {
+
 }
