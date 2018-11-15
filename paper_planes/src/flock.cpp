@@ -4,6 +4,7 @@ Flock::Flock() {
 	light.setAmbientColor(ofColor(128.0f, 0, 0));
 	cone.set(.25f, 0.5f);
 	// rotate cone be properly oriented when pointing
+
 }
 
 void Flock::init(int n_planes) {
@@ -56,13 +57,13 @@ void Flock::customDraw() {
 	ofVec3f arrowTail, arrowHead;
 	for (unsigned int i = 0; i < planes.size(); i++) {
 		arrowTail = planes[i].position;
-		arrowHead = arrowTail + planes[i].velocity;
+		arrowHead = arrowTail + planes[i].velocity.normalize();
 		
 		ofDrawArrow(arrowTail, arrowHead, 0.0f);
 		//ofDrawSphere(planes[i].position, 0.5f);
 		cone.setPosition(planes[i].position);
 		cone.lookAt(planes[i].position + planes[i].velocity.normalize());
-		//cone.rollDeg(90.0f);
+		//cone.rollDeg(180.0f);
 		//cone.panDeg(90.0f);
 		cone.draw();
 	}
@@ -88,7 +89,7 @@ void Flock::update() {
 		// in the future, acceleration will be non-zero
 		// the flocking rules will be called here to change accel
 		//planes[i].velocity += planes[i].acceleration * dt;
-		float theta = (float)i * dTheta + (float)ofGetFrameNum() / PI * 100.0f;
+		float theta = (float)i * dTheta + (float)ofGetFrameNum() / (PI * 100.0f);
 		planes[i].velocity = ofVec3f(10.0f * -sin(theta), 10.0f * cos(theta), 0.0f);
 
 		if (planes[i].position.lengthSquared() >= MAX_RADIUS * MAX_RADIUS) {
