@@ -3,13 +3,16 @@
 Flock::Flock() {
 	light.setAmbientColor(ofColor(128.0f, 0, 0));
 	cone.set(.25f, 0.5f);
-	cone.tiltDeg(90.0f);
+	//cone.tiltDeg(90.0f);
+	//cone.rollDeg(180.0f);
+	//cone.panDeg(90.0f);
 }
 
 //flock system variables
-float Flock::desired_separation = 25;
+float Flock::desired_separation = 5;
 float Flock::max_speed = 5;
-float Flock::max_force = 0.05;
+float Flock::max_force = 0.5;
+float Flock::neighbor_search_radius = 10;
 
 void Flock::init(int n_planes) {
 	if (planes.size() != 0) {
@@ -20,7 +23,7 @@ void Flock::init(int n_planes) {
 	ofSeedRandom();
 	ofVec3f position;
 	ofVec3f velocity;
-	ofVec3f acceleration(0, 0, 0); //linear motion for now
+	ofVec3f acceleration;
 
 	float dTheta = TWO_PI / (float)n_planes;
 	for (int i = 0; i < n_planes; i++) {
@@ -59,8 +62,7 @@ void Flock::customDraw() {
 		ofDrawArrow(arrowTail, arrowHead, 0.0f);
 		cone.setPosition(planes[i].position);
 		cone.lookAt(planes[i].position + planes[i].velocity.normalize());
-		//cone.rollDeg(180.0f);
-		//cone.panDeg(90.0f);
+
 		cone.draw();
 	}
 
@@ -77,17 +79,19 @@ void Flock::update() {
 		
 		ofVec3f bounding = bound(i);
 		ofVec3f separation = separate(i);
+		ofVec3f alignment = align(i);
+		ofVec3f cohesion = cohere(i);
 
-		planes[i].apply_force(separation);
-		planes[i].apply_force(bounding, 5.0);
-		
+		planes[i].apply_force(separation, 1.0);
+		planes[i].apply_force(cohesion, 1.0);
+		planes[i].apply_force(bounding, 10.0);
 
 		// ok so basically numerically integrate
-		// v = dx / dt
-		// dx = v * dt
-		// x = x + dx
-
+		// a = dv / dt
+		// dv = a * dt
+		// v_new = v_old + dv
 		planes[i].velocity += planes[i].acceleration * dt;
+		// cap the speed so they don't get outta control
 		planes[i].velocity.limit(max_speed);
 		planes[i].position += planes[i].velocity * dt;
 	}
@@ -127,12 +131,45 @@ ofVec3f Flock::separate(int index) {
 	return steer;
 }
 
+ofVec3f Flock::align(int index) {
+
+}
+
+ofVec3f Flock::cohere(int index) {
+	paper_plane this_plane = planes[index];
+	ofVec3f position_sum;
+	int count = 0;
+	for (int i = 0; i < planes.size(); i++) {
+		paper_plane other = planes[i];
+		float distance = this_plane.position.distance(other.position);
+		if (distance > 0 && distance < neighbor_search_radius) {
+			position_sum += planes[i].position;
+			count++;
+		}
+	}
+	if (count > 0) {
+		position_sum /= count; // center of mass of the flock
+		return seek(index, position_sum);
+	}
+	else {
+		return ofVec3f();
+	}
+}
+
 ofVec3f Flock::bound(int index) {
 	paper_plane this_plane = planes[index];
 	ofVec3f steer;
 	if (this_plane.position.lengthSquared() >= MAX_RADIUS * MAX_RADIUS) {
 		//create vector pointing to origin
-		steer = -(this_plane.position);
+		steer = seek(index, ORIGIN);
 	}
+	return steer;
+}
+
+ofVec3f Flock::seek(int index, ofVec3f target) {
+	paper_plane this_plane = planes[index];
+	ofVec3f desired = target - this_plane.position;
+	desired.scale(max_speed);
+	ofVec3f steer = desired - this_plane.velocity;
 	return steer;
 }

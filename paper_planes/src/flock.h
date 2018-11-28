@@ -5,6 +5,7 @@
 const int MAX_RADIUS = 20;
 const int POSITION_DISPERSION = 10;
 const int VELOCITY_DISPERSION = 5;
+const ofVec3f ORIGIN;
 
 class Flock : public ofNode {
 	struct paper_plane {
@@ -15,7 +16,10 @@ class Flock : public ofNode {
 	};
 
 	ofVec3f separate(int index);
+	ofVec3f align(int index);
+	ofVec3f cohere(int index);
 	ofVec3f bound(int index);
+	ofVec3f seek(int index, ofVec3f target);
 	
 	ofConePrimitive cone;
 	ofxAssimpModelLoader model;
@@ -29,6 +33,7 @@ public:
 	static float desired_separation;
 	static float max_speed;
 	static float max_force;
+	static float neighbor_search_radius;
 
 protected:
 	void update();
