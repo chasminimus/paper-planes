@@ -11,10 +11,11 @@ class Flock : public ofNode {
 		ofVec3f position;
 		ofVec3f velocity;
 		ofVec3f acceleration;
-		void apply_force(ofVec3f force);
+		void apply_force(ofVec3f force, float scale=1.0);
 	};
 
 	ofVec3f separate(int index);
+	ofVec3f bound(int index);
 	
 	ofConePrimitive cone;
 	ofxAssimpModelLoader model;

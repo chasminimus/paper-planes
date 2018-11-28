@@ -24,7 +24,7 @@ void Flock::init(int n_planes) {
 
 	float dTheta = TWO_PI / (float)n_planes;
 	for (int i = 0; i < n_planes; i++) {
-		/*
+		
 		position.x = (ofRandom(1.0f) - 0.5f) * POSITION_DISPERSION;
 		position.y = (ofRandom(1.0f) - 0.5f) * POSITION_DISPERSION;
 		position.z = (ofRandom(1.0f) - 0.5f) * POSITION_DISPERSION;
@@ -32,13 +32,6 @@ void Flock::init(int n_planes) {
 		velocity.x = (ofRandom(1.0f) - 0.5f) * VELOCITY_DISPERSION;
 		velocity.y = (ofRandom(1.0f) - 0.5f) * VELOCITY_DISPERSION;
 		velocity.z = (ofRandom(1.0f) - 0.5f) * VELOCITY_DISPERSION;
-		*/
-
-		
-		// doing circles as a test
-		float theta = (float)i * dTheta;
-		position = ofVec3f(10.0f * cos(theta), 10.0f * sin(theta), 0.0f);
-		velocity = ofVec3f(10.0f * -sin(theta), 10.0f * cos(theta), 0.0f);
 		
 		paper_plane plane;
 		plane.position = position;
@@ -82,9 +75,12 @@ void Flock::update() {
 
 	for (unsigned int i = 0; i < planes.size(); i++) {
 		
+		ofVec3f bounding = bound(i);
 		ofVec3f separation = separate(i);
 
 		planes[i].apply_force(separation);
+		planes[i].apply_force(bounding, 5.0);
+		
 
 		// ok so basically numerically integrate
 		// v = dx / dt
@@ -92,17 +88,13 @@ void Flock::update() {
 		// x = x + dx
 
 		planes[i].velocity += planes[i].acceleration * dt;
+		planes[i].velocity.limit(max_speed);
 		planes[i].position += planes[i].velocity * dt;
-
-		// boundary constraint (basic for now and prone to sticking on the boundary, will use acceleration eventually)
-		if (planes[i].position.lengthSquared() >= MAX_RADIUS * MAX_RADIUS) {
-			planes[i].velocity = -(planes[i].velocity);
-		}
 	}
 }
 
-void Flock::paper_plane::apply_force(ofVec3f force) {
-	acceleration += force.limit(max_force);
+void Flock::paper_plane::apply_force(ofVec3f force, float scale) {
+	acceleration += force.limit(max_force).scale(scale);
 }
 
 ofVec3f Flock::separate(int index) {
@@ -131,6 +123,16 @@ ofVec3f Flock::separate(int index) {
 	if (steer.lengthSquared() > 0) {
 		steer.scale(max_speed);
 		steer - this_plane.velocity;
+	}
+	return steer;
+}
+
+ofVec3f Flock::bound(int index) {
+	paper_plane this_plane = planes[index];
+	ofVec3f steer;
+	if (this_plane.position.lengthSquared() >= MAX_RADIUS * MAX_RADIUS) {
+		//create vector pointing to origin
+		steer = -(this_plane.position);
 	}
 	return steer;
 }

@@ -13,7 +13,7 @@ void ofApp::setup() {
 	camEasy.setNearClip(10);
 	camEasy.setFarClip(10000);
 
-	node_paper_planes.init(50);
+	node_paper_planes.init(100);
 }
 
 //--------------------------------------------------------------
