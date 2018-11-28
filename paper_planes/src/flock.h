@@ -11,10 +11,12 @@ class Flock : public ofNode {
 		ofVec3f position;
 		ofVec3f velocity;
 		ofVec3f acceleration;
+		void apply_force(ofVec3f force);
 	};
+
+	ofVec3f separate(int index);
 	
 	ofConePrimitive cone;
-
 	ofxAssimpModelLoader model;
 
 public: 
@@ -23,6 +25,9 @@ public:
 	void customDraw(); // overridden virtual method
 	ofLight light;
 	//ofMaterial material;
+	static float desired_separation;
+	static float max_speed;
+	static float max_force;
 
 protected:
 	void update();
