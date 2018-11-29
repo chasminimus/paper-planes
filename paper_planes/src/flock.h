@@ -2,9 +2,9 @@
 #include "ofMain.h"
 #include "ofxAssimpModelLoader.h"
 
-const int MAX_RADIUS = 20;
-const int POSITION_DISPERSION = 10;
-const int VELOCITY_DISPERSION = 5;
+const int MAX_RADIUS = 40;
+const int POSITION_DISPERSION = 70;
+const int VELOCITY_DISPERSION = 1;
 const ofVec3f ORIGIN;
 
 class Flock : public ofNode {

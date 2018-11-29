@@ -9,10 +9,10 @@ Flock::Flock() {
 }
 
 //flock system variables
-float Flock::desired_separation = 5;
+float Flock::desired_separation = 1;
 float Flock::max_speed = 5;
-float Flock::max_force = 0.5;
-float Flock::neighbor_search_radius = 10;
+float Flock::max_force = 0.50;
+float Flock::neighbor_search_radius = 20;
 
 void Flock::init(int n_planes) {
 	if (planes.size() != 0) {
@@ -83,8 +83,9 @@ void Flock::update() {
 		ofVec3f cohesion = cohere(i);
 
 		planes[i].apply_force(separation, 1.0);
+		planes[i].apply_force(alignment, 1.0);
 		planes[i].apply_force(cohesion, 1.0);
-		planes[i].apply_force(bounding, 10.0);
+		planes[i].apply_force(bounding, 20.0);
 
 		// ok so basically numerically integrate
 		// a = dv / dt
@@ -132,7 +133,25 @@ ofVec3f Flock::separate(int index) {
 }
 
 ofVec3f Flock::align(int index) {
-
+	paper_plane this_plane = planes[index];
+	int count = 0;
+	ofVec3f velocity_sum;
+	for (int i = 0; i < planes.size(); i++) {
+		paper_plane other = planes[i];
+		float distance = this_plane.position.distance(other.position);
+		if (distance > 0 && distance < neighbor_search_radius) {
+			velocity_sum += other.velocity;
+			count++;
+		}
+	}
+	if (count > 0) {
+		velocity_sum /= count;
+		velocity_sum.scale(max_speed);
+		return velocity_sum - this_plane.velocity;
+	}
+	else {
+		return ofVec3f(); // 0 vector
+	}
 }
 
 ofVec3f Flock::cohere(int index) {
@@ -152,16 +171,16 @@ ofVec3f Flock::cohere(int index) {
 		return seek(index, position_sum);
 	}
 	else {
-		return ofVec3f();
+		return ofVec3f(); // 0 vector
 	}
 }
 
 ofVec3f Flock::bound(int index) {
 	paper_plane this_plane = planes[index];
 	ofVec3f steer;
-	if (this_plane.position.lengthSquared() >= MAX_RADIUS * MAX_RADIUS) {
+	if (this_plane.position.length() >= MAX_RADIUS) {
 		//create vector pointing to origin
-		steer = seek(index, ORIGIN);
+		steer = -this_plane.position / MAX_RADIUS;
 	}
 	return steer;
 }

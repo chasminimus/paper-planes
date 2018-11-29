@@ -13,7 +13,7 @@ void ofApp::setup() {
 	camEasy.setNearClip(10);
 	camEasy.setFarClip(10000);
 
-	node_paper_planes.init(100);
+	node_paper_planes.init(150);
 }
 
 //--------------------------------------------------------------
@@ -27,7 +27,7 @@ void ofApp::draw() {
 	camEasy.begin();
 	ofSetColor(255, 255, 255, 255);
 	ofDrawRotationAxes(MAX_RADIUS, 0.1f);
-	ofDrawGrid(2.0f, 10, true, true, true, true);
+	//ofDrawGrid(2.0f, 10, true, true, true, true);
 	node_paper_planes.customDraw();
 	camEasy.end();
 }
