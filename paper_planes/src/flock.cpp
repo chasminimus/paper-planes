@@ -9,10 +9,11 @@ Flock::Flock() {
 }
 
 //flock system variables
-float Flock::desired_separation = 1;
-float Flock::max_speed = 5;
-float Flock::max_force = 0.50;
-float Flock::neighbor_search_radius = 20;
+float Flock::desired_separation = 5;
+float Flock::max_speed = 10;
+float Flock::max_force = 0.5;
+float Flock::neighbor_search_radius = 10;
+float Flock::sim_speed = 5;
 
 void Flock::init(int n_planes) {
 	if (planes.size() != 0) {
@@ -73,7 +74,7 @@ void Flock::customDraw() {
 
 void Flock::update() {
 	// time differential used for updating vectors
-	float dt = ofGetLastFrameTime();
+	float dt = ofGetLastFrameTime() * sim_speed;
 
 	for (unsigned int i = 0; i < planes.size(); i++) {
 		
@@ -85,7 +86,7 @@ void Flock::update() {
 		planes[i].apply_force(separation, 1.5);
 		planes[i].apply_force(alignment, 1.0);
 		planes[i].apply_force(cohesion, 1.0);
-		planes[i].apply_force(bounding, 20.0);
+		planes[i].apply_force(bounding, 2.0);
 
 		// ok so basically numerically integrate
 		// a = dv / dt
@@ -95,7 +96,7 @@ void Flock::update() {
 		// cap the speed so they don't get outta control
 		planes[i].velocity.limit(max_speed);
 		planes[i].position += planes[i].velocity * dt;
-		// reset the acceleration
+		// reset the acceleration each frame
 		planes[i].acceleration *= 0;
 	}
 }
