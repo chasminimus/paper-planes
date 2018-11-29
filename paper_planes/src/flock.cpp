@@ -82,7 +82,7 @@ void Flock::update() {
 		ofVec3f alignment = align(i);
 		ofVec3f cohesion = cohere(i);
 
-		planes[i].apply_force(separation, 1.0);
+		planes[i].apply_force(separation, 1.5);
 		planes[i].apply_force(alignment, 1.0);
 		planes[i].apply_force(cohesion, 1.0);
 		planes[i].apply_force(bounding, 20.0);
@@ -95,6 +95,8 @@ void Flock::update() {
 		// cap the speed so they don't get outta control
 		planes[i].velocity.limit(max_speed);
 		planes[i].position += planes[i].velocity * dt;
+		// reset the acceleration
+		planes[i].acceleration *= 0;
 	}
 }
 
@@ -183,6 +185,10 @@ ofVec3f Flock::bound(int index) {
 		steer = -this_plane.position / MAX_RADIUS;
 	}
 	return steer;
+}
+
+void Flock::wrap(int index) {
+	paper_plane this_plane = planes[index];
 }
 
 ofVec3f Flock::seek(int index, ofVec3f target) {

@@ -19,6 +19,7 @@ class Flock : public ofNode {
 	ofVec3f align(int index);
 	ofVec3f cohere(int index);
 	ofVec3f bound(int index);
+	void wrap(int index);
 	ofVec3f seek(int index, ofVec3f target);
 	
 	ofConePrimitive cone;
