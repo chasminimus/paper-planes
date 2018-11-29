@@ -6,12 +6,30 @@ ofxAssimpModelLoader model;
 void ofApp::setup() {
 	ofEnableDepthTest();
 	ofEnableSmoothing();
+	
 	model.loadModel("model/paper_plane.obj");
+	
 	// set up camera
 	camEasy.setTarget(node_paper_planes);
 	camEasy.setDistance(25);
 	camEasy.setNearClip(10);
 	camEasy.setFarClip(10000);
+
+	// set up gui
+	gui = new ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
+	gui->addHeader(":: Controls ::");
+	gui->addFooter();
+	
+	s_separation = gui->addSlider("Separation Weight", 0, 5.0);
+	s_alignment = gui->addSlider("Alignment Weight", 0, 5.0);
+	s_cohesion = gui->addSlider("Cohesion Weight", 0, 5.0);
+	s_speed = gui->addSlider("Simluation Speed", 0, 10.0);
+	s_desired_separation = gui->addSlider("Separation Distance", 0, 20.0);
+	s_neighbor_radius = gui->addSlider("Neighbor Radius", 0, 20.0);
+
+	s_speed->bind(Flock::sim_speed);
+	s_desired_separation->bind(Flock::desired_separation);
+	s_neighbor_radius->bind(Flock::neighbor_search_radius);
 
 	node_paper_planes.init(150);
 }

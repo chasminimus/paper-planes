@@ -2,6 +2,7 @@
 
 #include "ofMain.h"
 #include "ofxAssimpModelLoader.h"
+#include "ofxDatGui.h"
 #include "flock.h"
 
 class ofApp : public ofBaseApp{
@@ -25,4 +26,11 @@ class ofApp : public ofBaseApp{
 		
 		ofEasyCam camEasy;
 		Flock node_paper_planes;
+		ofxDatGui* gui;
+		ofxDatGuiSlider* s_separation;
+		ofxDatGuiSlider* s_alignment;
+		ofxDatGuiSlider* s_cohesion;
+		ofxDatGuiSlider* s_speed;
+		ofxDatGuiSlider* s_neighbor_radius;
+		ofxDatGuiSlider* s_desired_separation;
 };
