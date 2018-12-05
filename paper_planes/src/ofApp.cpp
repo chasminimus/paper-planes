@@ -4,10 +4,9 @@ ofxAssimpModelLoader model;
 
 //--------------------------------------------------------------
 void ofApp::setup() {
-	ofEnableDepthTest();
 	ofEnableSmoothing();
 	
-	model.loadModel("model/paper_plane.obj");
+	//model.loadModel("model/paper_plane.obj");
 	
 	// set up camera
 	camEasy.setTarget(node_paper_planes);
@@ -16,10 +15,10 @@ void ofApp::setup() {
 	camEasy.setFarClip(10000);
 
 	// set up gui
-	gui = new ofxDatGui(ofxDatGuiAnchor::TOP_LEFT);
+	gui = new ofxDatGui(ofxDatGuiAnchor::TOP_RIGHT);
 	gui->addHeader(":: Controls ::");
 	gui->addFooter();
-	
+
 	s_separation = gui->addSlider("Separation Weight", 0, 5.0);
 	s_alignment = gui->addSlider("Alignment Weight", 0, 5.0);
 	s_cohesion = gui->addSlider("Cohesion Weight", 0, 5.0);
@@ -41,7 +40,7 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-	ofBackground(50, 50, 50, 0);
+	//ofBackground(50, 50, 50, 0);
 	camEasy.begin();
 	ofSetColor(255, 255, 255, 255);
 	ofDrawRotationAxes(MAX_RADIUS, 0.1f);

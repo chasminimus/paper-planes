@@ -26,6 +26,7 @@ class ofApp : public ofBaseApp{
 		
 		ofEasyCam camEasy;
 		Flock node_paper_planes;
+
 		ofxDatGui* gui;
 		ofxDatGuiSlider* s_separation;
 		ofxDatGuiSlider* s_alignment;
