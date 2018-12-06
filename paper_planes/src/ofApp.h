@@ -12,6 +12,8 @@ class ofApp : public ofBaseApp{
 		void update();
 		void draw();
 
+		void onToggleEvent(ofxDatGuiToggleEvent e);
+
 		void keyPressed(int key);
 		void keyReleased(int key);
 		void mouseMoved(int x, int y );
@@ -28,10 +30,18 @@ class ofApp : public ofBaseApp{
 		Flock node_paper_planes;
 
 		ofxDatGui* gui;
+		
+		// weights
+		ofxDatGuiFolder* f_weights;
 		ofxDatGuiSlider* s_separation;
 		ofxDatGuiSlider* s_alignment;
 		ofxDatGuiSlider* s_cohesion;
+		ofxDatGuiSlider* s_bounding;
+
+		// other controls
 		ofxDatGuiSlider* s_speed;
 		ofxDatGuiSlider* s_neighbor_radius;
 		ofxDatGuiSlider* s_desired_separation;
+
+		ofxDatGuiToggle* t_wraparound;
 };

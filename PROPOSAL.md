@@ -30,13 +30,14 @@ I've done flocking before in just 2D using JavaScript and p5.js, so the ideas at
 
 ## Extra Ideas
 
-- Improve efficiency by implementing bin-lattice spatial subdivision (split the simulation space into many cells and have the paper planes do their computations locally to whatever cell they're in)
-- Include a flowfield (as well as visualization) as an additional factor affecting paper plane movement
-- Implement more complicated dynamics
-  - 'Predator' planes (uh, pretend it makes sense) that will hunt normal planes which in turn try to steer away from predators
-  - Food objects for planes to seek for
-    - Eating food increases a plane's mass which makes their acceleration lower and the plane more susceptible to predators
-  - Different colors/groups of planes that try to stay with/avoid those of the same group
-  - Extra extra ideas
-    - Planes can 'remember' things that affects their steering
-    - Some kind of nesting? A flock of planes could become one single 'organism' and those organisms could also flock
+- [ ] Improve efficiency by implementing bin-lattice spatial subdivision (split the simulation space into many cells and have the paper planes do their computations locally to whatever cell they're in)
+- [ ] Include a flowfield (as well as visualization) as an additional factor affecting paper plane movement
+- [ ] Implement more complicated dynamics
+  - [ ] 'Predator' planes (uh, pretend it makes sense) that will hunt normal planes which in turn try to steer away from predators
+  - [ ] Food objects for planes to seek for
+    - [ ] Eating food increases a plane's mass which makes their acceleration lower and the plane more susceptible to predators
+  - [ ] Different colors/groups of planes that try to stay with/avoid those of the same group
+  - [ ] Extra extra ideas
+    - [ ] Planes can 'remember' things that affects their steering
+    - [ ] Some kind of nesting? A flock of planes could become one single 'organism' and those organisms could also flock
+

@@ -1,8 +1,8 @@
 ﻿#include "flock.h"
 
 Flock::Flock() {
-	light.setAmbientColor(ofColor(128.0f, 0, 0));
-	cone.set(.25f, 0.5f);
+	light.setAmbientColor(ofColor(0, 0, 0));
+	cone.set(.5f, 1.0f);
 	//cone.tiltDeg(90.0f);
 	//cone.rollDeg(180.0f);
 	//cone.panDeg(90.0f);
@@ -14,6 +14,13 @@ float Flock::max_speed = 10;
 float Flock::max_force = 0.5;
 float Flock::neighbor_search_radius = 10;
 float Flock::sim_speed = 5;
+bool Flock::wraparound = false;
+
+//flock rule weights
+float Flock::separation_weight = 1.5;
+float Flock::alignment_weight = 1.0;
+float Flock::cohesion_weight = 1.0;
+float Flock::bounding_weight = 1.15;
 
 void Flock::init(int n_planes) {
 	if (planes.size() != 0) {
@@ -26,7 +33,6 @@ void Flock::init(int n_planes) {
 	ofVec3f velocity;
 	ofVec3f acceleration;
 
-	float dTheta = TWO_PI / (float)n_planes;
 	for (int i = 0; i < n_planes; i++) {
 		
 		position.x = (ofRandom(1.0f) - 0.5f) * POSITION_DISPERSION;
@@ -74,20 +80,29 @@ void Flock::customDraw() {
 
 void Flock::update() {
 	// time differential used for updating vectors
+	ofVec3f bounding;
+	ofVec3f separation;
+	ofVec3f alignment;
+	ofVec3f cohesion;
 	float dt = ofGetLastFrameTime() * sim_speed;
 
 	for (unsigned int i = 0; i < planes.size(); i++) {
 		
-		ofVec3f bounding = bound(i);
-		ofVec3f separation = separate(i);
-		ofVec3f alignment = align(i);
-		ofVec3f cohesion = cohere(i);
+		separation = separate(i);
+		alignment = align(i);
+		cohesion = cohere(i);
 
-		planes[i].apply_force(separation, 1.5);
-		planes[i].apply_force(alignment, 1.0);
-		planes[i].apply_force(cohesion, 1.0);
-		planes[i].apply_force(bounding, 2.0);
+		planes[i].apply_force(separation, separation_weight);
+		planes[i].apply_force(alignment, alignment_weight);
+		planes[i].apply_force(cohesion, cohesion_weight);
 
+		if (wraparound) {
+			wrap(i);
+		}
+		else {
+			bounding = bound(i);
+			planes[i].apply_force(bounding, bounding_weight);
+		}
 		// ok so basically numerically integrate
 		// a = dv / dt
 		// dv = a * dt
@@ -153,7 +168,7 @@ ofVec3f Flock::align(int index) {
 		return velocity_sum - this_plane.velocity;
 	}
 	else {
-		return ofVec3f(); // 0 vector
+		return ZERO_VECTOR;
 	}
 }
 
@@ -174,7 +189,7 @@ ofVec3f Flock::cohere(int index) {
 		return seek(index, position_sum);
 	}
 	else {
-		return ofVec3f(); // 0 vector
+		return ZERO_VECTOR;
 	}
 }
 
@@ -189,7 +204,28 @@ ofVec3f Flock::bound(int index) {
 }
 
 void Flock::wrap(int index) {
-	paper_plane this_plane = planes[index];
+	paper_plane* this_plane = &planes[index];
+	// "why don't you just flip the position vector?"
+	// well, then they'd get stuck outside and constantly zap back and forth
+	// there's probably a fix for that but this isn't that horrible
+	if (this_plane->position.x < -MAX_RADIUS) {
+		this_plane->position.x = MAX_RADIUS;
+	}			  
+	if (this_plane->position.x > MAX_RADIUS) {
+		this_plane->position.x = -MAX_RADIUS;
+	}			  
+	if (this_plane->position.y < -MAX_RADIUS) {
+		this_plane->position.y = MAX_RADIUS;
+	}			  
+	if (this_plane->position.y > MAX_RADIUS) {
+		this_plane->position.y = -MAX_RADIUS;
+	}			  
+	if (this_plane->position.z < -MAX_RADIUS) {
+		this_plane->position.z = MAX_RADIUS;
+	}			  
+	if (this_plane->position.z > MAX_RADIUS) {
+		this_plane->position.z = -MAX_RADIUS;
+	}
 }
 
 ofVec3f Flock::seek(int index, ofVec3f target) {

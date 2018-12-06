@@ -2,10 +2,11 @@
 #include "ofMain.h"
 #include "ofxAssimpModelLoader.h"
 
-const int MAX_RADIUS = 40;
+const int MAX_RADIUS = 50;
 const int POSITION_DISPERSION = 80;
 const int VELOCITY_DISPERSION = 1;
-const ofVec3f ORIGIN;
+const int LATTICE_SIZE = 10;
+const ofVec3f ZERO_VECTOR;
 
 class Flock : public ofNode {
 	struct paper_plane {
@@ -30,12 +31,18 @@ public:
 	void init(int n_planes);
 	void customDraw(); // overridden virtual method
 	ofLight light;
-	//ofMaterial material;
+
 	static float desired_separation;
 	static float max_speed;
 	static float max_force;
 	static float neighbor_search_radius;
 	static float sim_speed;
+	static bool wraparound;
+
+	static float separation_weight;
+	static float alignment_weight;
+	static float cohesion_weight;
+	static float bounding_weight;
 
 protected:
 	void update();
