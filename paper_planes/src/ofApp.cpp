@@ -41,6 +41,8 @@ void ofApp::setup() {
 	t_wraparound = gui->addToggle("Wraparound");
 	t_wraparound->onToggleEvent(this, &ofApp::onToggleEvent);
 
+	gui->addFRM(1.0f);
+
 	// and their bindings
 	s_speed->bind(Flock::sim_speed);
 	s_desired_separation->bind(Flock::desired_separation);

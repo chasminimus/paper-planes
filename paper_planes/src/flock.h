@@ -6,8 +6,9 @@ const int MAX_RADIUS = 50;
 const int POSITION_DISPERSION = MAX_RADIUS * 2;
 const int VELOCITY_DISPERSION = 5;
 
-// how many subdivisions to make
-const int LATTICE_SUBDIVS = 10;
+// how many subdivisions to make (must be able to divide MAX_RADIUS*2
+// better if even
+const int LATTICE_SUBDIVS = 4;
 // the actual size of a cell in pixels (or whatever units this thing uses)
 const float LATTICE_GRID_SIZE = (MAX_RADIUS * 2) / LATTICE_SUBDIVS;
 
@@ -41,6 +42,8 @@ class Flock : public ofNode {
 	Lattice<vector<paper_plane*>> bins;
 
 	void binRegister(int index);
+
+	vector<paper_plane*> aggregrateNeighborCells(int i, int j, int k);
 
 	int n_planes_;
 

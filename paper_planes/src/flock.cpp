@@ -12,7 +12,7 @@ Flock::Flock() {
 float Flock::desired_separation = 5;
 float Flock::max_speed = 10;
 float Flock::max_force = 0.5;
-float Flock::neighbor_search_radius = 10;
+float Flock::neighbor_search_radius = 10; //TODO: this might be irrelevant with binning now
 float Flock::sim_speed = 5;
 bool Flock::wraparound = false;
 
@@ -81,6 +81,7 @@ void Flock::customDraw() {
 
 void Flock::update() {
 	// time differential used for updating vectors
+	vector<paper_plane*> cell_aggregate;
 	ofVec3f bounding;
 	ofVec3f separation;
 	ofVec3f alignment;
@@ -106,11 +107,12 @@ void Flock::update() {
 		for (int j = 0; j < LATTICE_SUBDIVS; j++) {
 			for (int k = 0; k < LATTICE_SUBDIVS; k++) {
 				vector<paper_plane*> cell = bins[i][j][k]; // the list of planes in the cell
+				cell_aggregate = aggregrateNeighborCells(i, j, k);
 				//TODO: aggregate the lists of neighboring cells too?
 				for (paper_plane* plane : cell) {
-					separation = separate(plane, cell);
-					alignment = align(plane, cell);
-					cohesion = cohere(plane, cell);
+					separation = separate(plane, cell_aggregate);
+					alignment = align(plane, cell_aggregate);
+					cohesion = cohere(plane, cell_aggregate);
 					
 					plane->applyForce(separation, separation_weight);
 					plane->applyForce(alignment, alignment_weight);
@@ -176,14 +178,34 @@ void Flock::binRegister(int index) {
 	}
 }
 
+vector<Flock::paper_plane*> Flock::aggregrateNeighborCells(int i, int j, int k) {
+	vector<paper_plane*> cell, cell_aggregate;
+	bool valid_x, valid_y, valid_z;
+	for (int x = -1; x <= 1; x++) {
+		for (int y = -1; y <= 1; y++) {
+			for (int z = -1; z <= 1; z++) {
+				valid_x = (i + x >= 0 && i + x <= LATTICE_SUBDIVS);
+				valid_y = (j + y >= 0 && j + y <= LATTICE_SUBDIVS);
+				valid_z = (k + z >= 0 && k + z <= LATTICE_SUBDIVS);
+				if (valid_x && valid_y && valid_z) {
+					cell = bins[i][j][k];
+					cell_aggregate.insert(cell_aggregate.end(), cell.begin(), cell.end());
+				}
+
+			}
+		}
+	}
+	return cell_aggregate;
+}
+
 ofVec3f Flock::separate(paper_plane* plane, vector<paper_plane*> &cell) {
 	ofVec3f steer, diff;
 	int count = 0;
 
 	for (paper_plane* other : cell) {
-		float distance = plane->position.distance(other->position);
+		float distance = plane->position.distanceSquared(other->position);
 		//check if too close to other boid
-		if (distance > 0 && distance < desired_separation) {
+		if (distance > 0 && distance < desired_separation * desired_separation) {
 			//create vector pointing away from it
 			diff = ofVec3f(plane->position - other->position);
 			diff.normalize();
@@ -208,8 +230,8 @@ ofVec3f Flock::align(paper_plane* plane, vector<paper_plane*> &cell) {
 	int count = 0;
 	ofVec3f velocity_sum;
 	for (paper_plane* other : cell) {
-		float distance = plane->position.distance(other->position);
-		if (distance > 0 && distance < neighbor_search_radius) {
+		float distance = plane->position.distanceSquared(other->position);
+		if (distance > 0 && distance < neighbor_search_radius * neighbor_search_radius) {
 			velocity_sum += other->velocity;
 			count++;
 		}
@@ -228,8 +250,8 @@ ofVec3f Flock::cohere(paper_plane* plane, vector<paper_plane*> &cell) {
 	ofVec3f position_sum;
 	int count = 0;
 	for (paper_plane* other : cell) {
-		float distance = plane->position.distance(other->position);
-		if (distance > 0 && distance < neighbor_search_radius) {
+		float distance = plane->position.distanceSquared(other->position);
+		if (distance > 0 && distance < neighbor_search_radius * neighbor_search_radius) {
 			position_sum += other->position;
 			count++;
 		}
