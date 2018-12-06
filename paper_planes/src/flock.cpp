@@ -106,11 +106,12 @@ void Flock::update() {
 		for (int j = 0; j < LATTICE_SUBDIVS; j++) {
 			for (int k = 0; k < LATTICE_SUBDIVS; k++) {
 				vector<paper_plane*> cell = bins[i][j][k]; // the list of planes in the cell
+				//TODO: aggregate the lists of neighboring cells too?
 				for (paper_plane* plane : cell) {
 					separation = separate(plane, cell);
 					alignment = align(plane, cell);
 					cohesion = cohere(plane, cell);
-
+					
 					plane->applyForce(separation, separation_weight);
 					plane->applyForce(alignment, alignment_weight);
 					plane->applyForce(cohesion, cohesion_weight);
@@ -127,6 +128,7 @@ void Flock::update() {
 			bounding = bound(i);
 			planes[i].applyForce(bounding, bounding_weight);
 		}
+		
 		// ok so basically numerically integrate
 		// a = dv / dt
 		// dv = a * dt
@@ -228,7 +230,7 @@ ofVec3f Flock::cohere(paper_plane* plane, vector<paper_plane*> &cell) {
 	for (paper_plane* other : cell) {
 		float distance = plane->position.distance(other->position);
 		if (distance > 0 && distance < neighbor_search_radius) {
-			position_sum += plane->position;
+			position_sum += other->position;
 			count++;
 		}
 	}

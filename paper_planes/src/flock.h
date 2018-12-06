@@ -7,7 +7,7 @@ const int POSITION_DISPERSION = MAX_RADIUS * 2;
 const int VELOCITY_DISPERSION = 5;
 
 // how many subdivisions to make
-const int LATTICE_SUBDIVS = 5;
+const int LATTICE_SUBDIVS = 10;
 // the actual size of a cell in pixels (or whatever units this thing uses)
 const float LATTICE_GRID_SIZE = (MAX_RADIUS * 2) / LATTICE_SUBDIVS;
 
@@ -28,6 +28,8 @@ class Flock : public ofNode {
 	ofVec3f separate(paper_plane* plane, vector<paper_plane*> &cell);
 	ofVec3f align(paper_plane* plane, vector<paper_plane*> &cell);
 	ofVec3f cohere(paper_plane* plane, vector<paper_plane*> &cell);
+	ofVec3f cohere(int index);
+	ofVec3f seek(int index, ofVec3f target);
 	ofVec3f bound(int index);
 	void wrap(int index);
 	ofVec3f seek(paper_plane* plane, ofVec3f target);

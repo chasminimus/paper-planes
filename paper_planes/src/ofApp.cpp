@@ -60,7 +60,7 @@ void ofApp::draw() {
 	camEasy.begin();
 	ofSetColor(255, 255, 255, 255);
 	//ofDrawRotationAxes(MAX_RADIUS, 0.1f);
-	ofDrawGrid((float)MAX_RADIUS / (LATTICE_SUBDIVS / 2), LATTICE_SUBDIVS / 2, true, true, true, true);
+	ofDrawGrid((float)MAX_RADIUS / ((float)LATTICE_SUBDIVS / 2), (float)LATTICE_SUBDIVS / 2, true, true, true, true);
 	node_paper_planes.customDraw();
 	camEasy.end();
 }
