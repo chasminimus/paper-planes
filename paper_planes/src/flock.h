@@ -23,16 +23,24 @@ class Flock : public ofNode {
 		ofVec3f position;
 		ofVec3f velocity;
 		ofVec3f acceleration;
+
 		void applyForce(ofVec3f force, float scale=1.0);
+
+		float max_speed = 10.0f;
+		float max_force = 0.5f;
+	};
+
+	struct predator : paper_plane {
+		float max_speed = 15.0f;
+		float max_force = 1.0f;
 	};
 
 	ofVec3f separate(paper_plane* plane, vector<paper_plane*> &cell);
 	ofVec3f align(paper_plane* plane, vector<paper_plane*> &cell);
 	ofVec3f cohere(paper_plane* plane, vector<paper_plane*> &cell);
-	ofVec3f cohere(int index);
-	ofVec3f seek(int index, ofVec3f target);
-	ofVec3f bound(int index);
-	void wrap(int index);
+	ofVec3f Flock::repel(paper_plane* plane, ofVec3f obstacle, float radius);
+	ofVec3f bound(paper_plane* plane);
+	void wrap(paper_plane* plane);
 	ofVec3f seek(paper_plane* plane, ofVec3f target);
 	
 	// this unholy type represents the 3d lattice of bins in which
@@ -41,13 +49,18 @@ class Flock : public ofNode {
 	// each cell in the lattice has a list of paper_plane pointers
 	Lattice<vector<paper_plane*>> bins;
 
-	void binRegister(int index);
+	void binRegister(paper_plane* plane);
 
 	vector<paper_plane*> aggregrateNeighborCells(int i, int j, int k);
 
 	int n_planes_;
 
 	ofConePrimitive cone;
+	ofSpherePrimitive pred_model;
+	ofMaterial material;
+	ofColor red;
+	ofColor white;
+
 	ofxAssimpModelLoader model;
 
 public: 
@@ -57,8 +70,6 @@ public:
 	ofLight light;
 
 	static float desired_separation;
-	static float max_speed;
-	static float max_force;
 	static float neighbor_search_radius;
 	static float sim_speed;
 	static bool wraparound;
@@ -70,5 +81,6 @@ public:
 
 protected:
 	void update();
-	vector<paper_plane> planes;
+	vector<paper_plane*> planes;
+	vector<predator*> preds;
 };

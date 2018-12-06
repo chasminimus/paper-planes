@@ -1,8 +1,12 @@
 ﻿#include "flock.h"
+#include <typeinfo>
 
 Flock::Flock() {
 	light.setAmbientColor(ofColor(0, 0, 0));
 	cone.set(.5f, 1.0f);
+	pred_model.setRadius(1.0f);
+	red = ofColor(255, 0, 0);
+	white = ofColor(255, 255, 255);
 	//cone.tiltDeg(90.0f);
 	//cone.rollDeg(180.0f);
 	//cone.panDeg(90.0f);
@@ -10,8 +14,6 @@ Flock::Flock() {
 
 //flock system variables
 float Flock::desired_separation = 5;
-float Flock::max_speed = 10;
-float Flock::max_force = 0.5;
 float Flock::neighbor_search_radius = 10; //TODO: this might be irrelevant with binning now
 float Flock::sim_speed = 5;
 bool Flock::wraparound = false;
@@ -45,11 +47,15 @@ void Flock::init(int n_planes) {
 		velocity.z = (ofRandom(1.0f) - 0.5f) * VELOCITY_DISPERSION;
 		
 		paper_plane plane;
+		if (i > n_planes - 10) {
+			//preds.push_back(&predator());
+		}
+
 		plane.position = position;
 		plane.velocity = velocity;
 		plane.acceleration = acceleration;
 
-		planes.push_back(plane);
+		planes.push_back(&plane);
 	}
 }
 
@@ -63,15 +69,23 @@ void Flock::customDraw() {
 	light.setPosition(ofVec3f(0, 0, 0));
 
 	ofVec3f arrowTail, arrowHead;
-	for (unsigned int i = 0; i < planes.size(); i++) {
-		arrowTail = planes[i].position;
-		arrowHead = arrowTail + planes[i].velocity.normalize();
+	for (paper_plane* plane : planes) {
+		arrowTail = plane->position;
+		arrowHead = arrowTail + plane->velocity.getNormalized();
 		
 		ofDrawArrow(arrowTail, arrowHead, 0.0f);
-		cone.setPosition(planes[i].position);
-		cone.lookAt(planes[i].position + planes[i].velocity.normalize());
-
+		cone.setPosition(plane->position);
+		cone.lookAt(plane->position + plane->velocity.getNormalized());
+		material.setDiffuseColor(white);
 		cone.draw();
+	}
+
+	for (predator* pred : preds) {
+		arrowTail = pred->position;
+		arrowHead = arrowTail + pred->velocity.getNormalized();
+		ofDrawArrow(arrowTail, arrowHead, 0.0f);
+		pred_model.setPosition(pred->position);
+		pred_model.draw();
 	}
 
 	light.disable();
@@ -97,9 +111,9 @@ void Flock::update() {
 		}
 	}
 
-	for (int i = 0; i < planes.size(); i++) {
-		// put each paper_plane in the correct bin
-		binRegister(i);
+	// put each paper_plane in the correct bin
+	for (paper_plane* plane : planes) {
+		binRegister(plane);
 	}
 
 	// for each cell...
@@ -122,25 +136,46 @@ void Flock::update() {
 		}
 	}
 
-	for (unsigned int i = 0; i < planes.size(); i++) {
+	for (paper_plane* plane : planes) {
 		if (wraparound) {
-			wrap(i);
+			wrap(plane);
 		}
 		else {
-			bounding = bound(i);
-			planes[i].applyForce(bounding, bounding_weight);
+			bounding = bound(plane);
+			plane->applyForce(bounding, bounding_weight);
 		}
 		
 		// ok so basically numerically integrate
 		// a = dv / dt
 		// dv = a * dt
 		// v_new = v_old + dv
-		planes[i].velocity += planes[i].acceleration * dt;
+		plane->velocity += plane->acceleration * dt;
 		// cap the speed so they don't get outta control
-		planes[i].velocity.limit(max_speed);
-		planes[i].position += planes[i].velocity * dt;
+		plane->velocity.limit(plane->max_speed);
+		plane->position += plane->velocity * dt;
 		// reset the acceleration each frame
-		planes[i].acceleration *= 0;
+		plane->acceleration *= 0;
+	}
+
+	for (predator* pred : preds) {
+		if (wraparound) {
+			wrap(pred);
+		}
+		else {
+			bounding = bound(pred);
+			pred->applyForce(bounding, bounding_weight);
+		}
+
+		cohesion = cohere(pred, planes);
+		alignment = align(pred, planes);
+
+		pred->applyForce(alignment, alignment_weight);
+		pred->applyForce(cohesion, cohesion_weight);
+
+		pred->velocity += pred->acceleration * dt;
+		pred->velocity.limit(pred->max_speed);
+		pred->position += pred->velocity * dt;
+		pred->acceleration *= 0;
 	}
 }
 
@@ -148,12 +183,11 @@ void Flock::paper_plane::applyForce(ofVec3f force, float scale) {
 	acceleration += force.limit(max_force).scale(scale);
 }
 
-void Flock::binRegister(int index) {
-	paper_plane* this_plane = &planes[index];
+void Flock::binRegister(paper_plane* plane) {
 	// shift the positions to all be positive to make bin calculation easier
 	// e.g. with a radius of 50, something at -50 will become 0 and something
 	// at 50 will become 100
-	ofVec3f offset_position = this_plane->position + RADIUS_VECTOR;
+	ofVec3f offset_position = plane->position + RADIUS_VECTOR;
 	
 	int x = (int)offset_position.x / LATTICE_GRID_SIZE;
 	int y = (int)offset_position.y / LATTICE_GRID_SIZE;
@@ -173,12 +207,13 @@ void Flock::binRegister(int index) {
 	
 	// another sanity check
 	if (x >= 0 && x < LATTICE_SUBDIVS && y >= 0 && y < LATTICE_SUBDIVS && z >= 0 && z < LATTICE_SUBDIVS) {
-		bins[x][y][z].push_back(this_plane);
+		bins[x][y][z].push_back(plane);
 		//cout << "Plane added to bin (" << x << " " << y << " " << z << ")" << endl;
 	}
 }
 
 vector<Flock::paper_plane*> Flock::aggregrateNeighborCells(int i, int j, int k) {
+	//TODO: just put this into the bin register itself? saves computing time
 	vector<paper_plane*> cell, cell_aggregate;
 	bool valid_x, valid_y, valid_z;
 	for (int x = -1; x <= 1; x++) {
@@ -220,7 +255,7 @@ ofVec3f Flock::separate(paper_plane* plane, vector<paper_plane*> &cell) {
 	}
 	//steering = desired - velocity
 	if (steer.lengthSquared() > 0) {
-		steer.scale(max_speed);
+		steer.scale(plane->max_speed);
 		steer - plane->velocity;
 	}
 	return steer;
@@ -238,7 +273,7 @@ ofVec3f Flock::align(paper_plane* plane, vector<paper_plane*> &cell) {
 	}
 	if (count > 0) {
 		velocity_sum /= count;
-		velocity_sum.scale(max_speed);
+		velocity_sum.scale(plane->max_speed);
 		return velocity_sum - plane->velocity;
 	}
 	else {
@@ -265,18 +300,33 @@ ofVec3f Flock::cohere(paper_plane* plane, vector<paper_plane*> &cell) {
 	}
 }
 
-ofVec3f Flock::bound(int index) {
-	paper_plane this_plane = planes[index];
+ofVec3f Flock::bound(paper_plane* plane) {
 	ofVec3f steer;
-	if (this_plane.position.length() >= MAX_RADIUS) {
+	if (plane->position.length() >= MAX_RADIUS) {
 		//create vector pointing to origin
-		steer = -this_plane.position / MAX_RADIUS;
+		steer = -plane->position / MAX_RADIUS;
 	}
 	return steer;
 }
 
-void Flock::wrap(int index) {
-	paper_plane* plane = &planes[index];
+ofVec3f Flock::repel(paper_plane* plane, ofVec3f obstacle, float radius) {
+	//Force that drives boid away from obstacle.
+	ofVec3f repel;
+	ofVec3f fut_pos = plane->position + plane->velocity; // future position for accuracy
+	float distance = plane->position.distance(obstacle);
+
+	if (distance <= radius) {
+		repel = plane->position - obstacle;
+		repel.normalize();
+		if (distance != 0) { //Don't divide by zero.
+			float scale = 1.0 / distance; //The closer to the obstacle, the stronger the force.
+			repel.scale(scale);
+		}
+	}
+	return repel;
+}
+
+void Flock::wrap(paper_plane* plane) {
 	// "why don't you just flip the position vector?"
 	// well, then they'd get stuck outside and constantly zap back and forth
 	// there's probably a fix for that but this isn't that horrible
@@ -302,7 +352,7 @@ void Flock::wrap(int index) {
 
 ofVec3f Flock::seek(paper_plane* plane, ofVec3f target) {
 	ofVec3f desired = target - plane->position;
-	desired.scale(max_speed);
+	desired.scale(plane->max_speed);
 	ofVec3f steer = desired - plane->velocity;
 	return steer;
 }
