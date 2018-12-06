@@ -87,11 +87,34 @@ void Flock::update() {
 	ofVec3f cohesion;
 	float dt = ofGetLastFrameTime() * sim_speed;
 	
-	// get in deep into the lattice and clear out the plane lists
+	// get in deep into the lattice and clear out the bin lists
 	for (int i = 0; i < LATTICE_SUBDIVS; i++) {
 		for (int j = 0; j < LATTICE_SUBDIVS; j++) {
 			for (int k = 0; k < LATTICE_SUBDIVS; k++) {
 				bins[i][j][k].clear();
+			}
+		}
+	}
+
+	for (int i = 0; i < planes.size(); i++) {
+		// put each paper_plane in the correct bin
+		binRegister(i);
+	}
+
+	// for each cell...
+	for (int i = 0; i < LATTICE_SUBDIVS; i++) {
+		for (int j = 0; j < LATTICE_SUBDIVS; j++) {
+			for (int k = 0; k < LATTICE_SUBDIVS; k++) {
+				vector<paper_plane*> cell = bins[i][j][k]; // the list of planes in the cell
+				for (paper_plane* plane : cell) {
+					separation = separate(plane, cell);
+					alignment = align(plane, cell);
+					cohesion = cohere(plane, cell);
+
+					plane->applyForce(separation, separation_weight);
+					plane->applyForce(alignment, alignment_weight);
+					plane->applyForce(cohesion, cohesion_weight);
+				}
 			}
 		}
 	}
@@ -104,17 +127,6 @@ void Flock::update() {
 			bounding = bound(i);
 			planes[i].applyForce(bounding, bounding_weight);
 		}
-
-		// put each paper_plane in the correct bin
-		binRegister(i);
-
-		separation = separate(i);
-		alignment = align(i);
-		cohesion = cohere(i);
-
-		planes[i].applyForce(separation, separation_weight);
-		planes[i].applyForce(alignment, alignment_weight);
-		planes[i].applyForce(cohesion, cohesion_weight);
 		// ok so basically numerically integrate
 		// a = dv / dt
 		// dv = a * dt
@@ -162,18 +174,16 @@ void Flock::binRegister(int index) {
 	}
 }
 
-ofVec3f Flock::separate(int index) {
-	paper_plane this_plane = planes[index];
+ofVec3f Flock::separate(paper_plane* plane, vector<paper_plane*> &cell) {
 	ofVec3f steer, diff;
 	int count = 0;
 
-	for (int i = 0; i < planes.size(); i++) {
-		paper_plane other = planes[i];
-		float distance = this_plane.position.distance(other.position);
+	for (paper_plane* other : cell) {
+		float distance = plane->position.distance(other->position);
 		//check if too close to other boid
 		if (distance > 0 && distance < desired_separation) {
 			//create vector pointing away from it
-			diff = ofVec3f(this_plane.position - other.position);
+			diff = ofVec3f(plane->position - other->position);
 			diff.normalize();
 			diff /= distance;
 			steer += diff;
@@ -187,48 +197,44 @@ ofVec3f Flock::separate(int index) {
 	//steering = desired - velocity
 	if (steer.lengthSquared() > 0) {
 		steer.scale(max_speed);
-		steer - this_plane.velocity;
+		steer - plane->velocity;
 	}
 	return steer;
 }
 
-ofVec3f Flock::align(int index) {
-	paper_plane this_plane = planes[index];
+ofVec3f Flock::align(paper_plane* plane, vector<paper_plane*> &cell) {
 	int count = 0;
 	ofVec3f velocity_sum;
-	for (int i = 0; i < planes.size(); i++) {
-		paper_plane other = planes[i];
-		float distance = this_plane.position.distance(other.position);
+	for (paper_plane* other : cell) {
+		float distance = plane->position.distance(other->position);
 		if (distance > 0 && distance < neighbor_search_radius) {
-			velocity_sum += other.velocity;
+			velocity_sum += other->velocity;
 			count++;
 		}
 	}
 	if (count > 0) {
 		velocity_sum /= count;
 		velocity_sum.scale(max_speed);
-		return velocity_sum - this_plane.velocity;
+		return velocity_sum - plane->velocity;
 	}
 	else {
 		return ZERO_VECTOR;
 	}
 }
 
-ofVec3f Flock::cohere(int index) {
-	paper_plane this_plane = planes[index];
+ofVec3f Flock::cohere(paper_plane* plane, vector<paper_plane*> &cell) {
 	ofVec3f position_sum;
 	int count = 0;
-	for (int i = 0; i < planes.size(); i++) {
-		paper_plane other = planes[i];
-		float distance = this_plane.position.distance(other.position);
+	for (paper_plane* other : cell) {
+		float distance = plane->position.distance(other->position);
 		if (distance > 0 && distance < neighbor_search_radius) {
-			position_sum += planes[i].position;
+			position_sum += plane->position;
 			count++;
 		}
 	}
 	if (count > 0) {
 		position_sum /= count; // center of mass of the flock
-		return seek(index, position_sum);
+		return seek(plane, position_sum);
 	}
 	else {
 		return ZERO_VECTOR;
@@ -246,34 +252,33 @@ ofVec3f Flock::bound(int index) {
 }
 
 void Flock::wrap(int index) {
-	paper_plane* this_plane = &planes[index];
+	paper_plane* plane = &planes[index];
 	// "why don't you just flip the position vector?"
 	// well, then they'd get stuck outside and constantly zap back and forth
 	// there's probably a fix for that but this isn't that horrible
-	if (this_plane->position.x < -MAX_RADIUS) {
-		this_plane->position.x = MAX_RADIUS;
+	if (plane->position.x < -MAX_RADIUS) {
+		plane->position.x = MAX_RADIUS;
 	}
-	if (this_plane->position.x > MAX_RADIUS) {
-		this_plane->position.x = -MAX_RADIUS;
+	if (plane->position.x > MAX_RADIUS) {
+		plane->position.x = -MAX_RADIUS;
 	}
-	if (this_plane->position.y < -MAX_RADIUS) {
-		this_plane->position.y = MAX_RADIUS;
+	if (plane->position.y < -MAX_RADIUS) {
+		plane->position.y = MAX_RADIUS;
 	}
-	if (this_plane->position.y > MAX_RADIUS) {
-		this_plane->position.y = -MAX_RADIUS;
+	if (plane->position.y > MAX_RADIUS) {
+		plane->position.y = -MAX_RADIUS;
 	}
-	if (this_plane->position.z < -MAX_RADIUS) {
-		this_plane->position.z = MAX_RADIUS;
+	if (plane->position.z < -MAX_RADIUS) {
+		plane->position.z = MAX_RADIUS;
 	}
-	if (this_plane->position.z > MAX_RADIUS) {
-		this_plane->position.z = -MAX_RADIUS;
+	if (plane->position.z > MAX_RADIUS) {
+		plane->position.z = -MAX_RADIUS;
 	}
 }
 
-ofVec3f Flock::seek(int index, ofVec3f target) {
-	paper_plane this_plane = planes[index];
-	ofVec3f desired = target - this_plane.position;
+ofVec3f Flock::seek(paper_plane* plane, ofVec3f target) {
+	ofVec3f desired = target - plane->position;
 	desired.scale(max_speed);
-	ofVec3f steer = desired - this_plane.velocity;
+	ofVec3f steer = desired - plane->velocity;
 	return steer;
 }

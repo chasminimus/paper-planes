@@ -7,13 +7,14 @@ const int POSITION_DISPERSION = MAX_RADIUS * 2;
 const int VELOCITY_DISPERSION = 5;
 
 // how many subdivisions to make
-const int LATTICE_SUBDIVS = 10;
+const int LATTICE_SUBDIVS = 5;
 // the actual size of a cell in pixels (or whatever units this thing uses)
 const float LATTICE_GRID_SIZE = (MAX_RADIUS * 2) / LATTICE_SUBDIVS;
 
 const ofVec3f ZERO_VECTOR;
 const ofVec3f RADIUS_VECTOR(MAX_RADIUS); // used to offset positions for bin calculations
 
+// 3d grid type (sorry)
 template<typename T> using Lattice = array<array<array<T, LATTICE_SUBDIVS>, LATTICE_SUBDIVS>, LATTICE_SUBDIVS>;
 
 class Flock : public ofNode {
@@ -24,12 +25,12 @@ class Flock : public ofNode {
 		void applyForce(ofVec3f force, float scale=1.0);
 	};
 
-	ofVec3f separate(int index);
-	ofVec3f align(int index);
-	ofVec3f cohere(int index);
+	ofVec3f separate(paper_plane* plane, vector<paper_plane*> &cell);
+	ofVec3f align(paper_plane* plane, vector<paper_plane*> &cell);
+	ofVec3f cohere(paper_plane* plane, vector<paper_plane*> &cell);
 	ofVec3f bound(int index);
 	void wrap(int index);
-	ofVec3f seek(int index, ofVec3f target);
+	ofVec3f seek(paper_plane* plane, ofVec3f target);
 	
 	// this unholy type represents the 3d lattice of bins in which
 	// paper_planes exist in. it's a 3d grid of pointers so we can
