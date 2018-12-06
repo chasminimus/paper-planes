@@ -20,6 +20,8 @@ template<typename T> using Lattice = array<array<array<T, LATTICE_SUBDIVS>, LATT
 
 class Flock : public ofNode {
 	struct paper_plane {
+		paper_plane() {};
+		~paper_plane() {};
 		ofVec3f position;
 		ofVec3f velocity;
 		ofVec3f acceleration;

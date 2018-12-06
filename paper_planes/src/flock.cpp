@@ -36,6 +36,8 @@ void Flock::init(int n_planes) {
 	ofVec3f velocity;
 	ofVec3f acceleration;
 
+	paper_plane plane;
+
 	for (int i = 0; i < n_planes; i++) {
 		
 		position.x = (ofRandom(1.0f) - 0.5f) * POSITION_DISPERSION;
@@ -46,16 +48,15 @@ void Flock::init(int n_planes) {
 		velocity.y = (ofRandom(1.0f) - 0.5f) * VELOCITY_DISPERSION;
 		velocity.z = (ofRandom(1.0f) - 0.5f) * VELOCITY_DISPERSION;
 		
-		paper_plane plane;
+		paper_plane* plane = new paper_plane();
 		if (i > n_planes - 10) {
-			//preds.push_back(&predator());
+			preds.push_back(new predator());
 		}
 
-		plane.position = position;
-		plane.velocity = velocity;
-		plane.acceleration = acceleration;
-
-		planes.push_back(&plane);
+		plane->position = position;
+		plane->velocity = velocity;
+		plane->acceleration = acceleration;
+		planes.push_back(plane);
 	}
 }
 
@@ -100,6 +101,7 @@ void Flock::update() {
 	ofVec3f separation;
 	ofVec3f alignment;
 	ofVec3f cohesion;
+	ofVec3f flee;
 	float dt = ofGetLastFrameTime() * sim_speed;
 	
 	// get in deep into the lattice and clear out the bin lists
@@ -127,6 +129,11 @@ void Flock::update() {
 					separation = separate(plane, cell_aggregate);
 					alignment = align(plane, cell_aggregate);
 					cohesion = cohere(plane, cell_aggregate);
+
+					for (predator* pred : preds) {
+						flee = repel(plane, pred->position, neighbor_search_radius);
+						plane->applyForce(flee);
+					}
 					
 					plane->applyForce(separation, separation_weight);
 					plane->applyForce(alignment, alignment_weight);
