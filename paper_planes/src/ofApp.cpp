@@ -41,7 +41,6 @@ void ofApp::setup() {
 	t_wraparound = gui->addToggle("Wraparound");
 	t_wraparound->onToggleEvent(this, &ofApp::onToggleEvent);
 
-
 	// and their bindings
 	s_speed->bind(Flock::sim_speed);
 	s_desired_separation->bind(Flock::desired_separation);
@@ -61,7 +60,7 @@ void ofApp::draw() {
 	camEasy.begin();
 	ofSetColor(255, 255, 255, 255);
 	//ofDrawRotationAxes(MAX_RADIUS, 0.1f);
-	ofDrawGrid((float)MAX_RADIUS / (LATTICE_SIZE / 2), LATTICE_SIZE / 2, true, true, true, true);
+	ofDrawGrid((float)MAX_RADIUS / (LATTICE_SUBDIVS / 2), LATTICE_SUBDIVS / 2, true, true, true, true);
 	node_paper_planes.customDraw();
 	camEasy.end();
 }

@@ -23,6 +23,7 @@ float Flock::cohesion_weight = 1.0;
 float Flock::bounding_weight = 1.15;
 
 void Flock::init(int n_planes) {
+	n_planes_ = n_planes;
 	if (planes.size() != 0) {
 		ofLogWarning("Flock") << "Flock already initialized!?";
 		planes.clear();
@@ -85,24 +86,35 @@ void Flock::update() {
 	ofVec3f alignment;
 	ofVec3f cohesion;
 	float dt = ofGetLastFrameTime() * sim_speed;
+	
+	// get in deep into the lattice and clear out the plane lists
+	for (int i = 0; i < LATTICE_SUBDIVS; i++) {
+		for (int j = 0; j < LATTICE_SUBDIVS; j++) {
+			for (int k = 0; k < LATTICE_SUBDIVS; k++) {
+				bins[i][j][k].clear();
+			}
+		}
+	}
 
 	for (unsigned int i = 0; i < planes.size(); i++) {
-		
-		separation = separate(i);
-		alignment = align(i);
-		cohesion = cohere(i);
-
-		planes[i].apply_force(separation, separation_weight);
-		planes[i].apply_force(alignment, alignment_weight);
-		planes[i].apply_force(cohesion, cohesion_weight);
-
 		if (wraparound) {
 			wrap(i);
 		}
 		else {
 			bounding = bound(i);
-			planes[i].apply_force(bounding, bounding_weight);
+			planes[i].applyForce(bounding, bounding_weight);
 		}
+
+		// put each paper_plane in the correct bin
+		binRegister(i);
+
+		separation = separate(i);
+		alignment = align(i);
+		cohesion = cohere(i);
+
+		planes[i].applyForce(separation, separation_weight);
+		planes[i].applyForce(alignment, alignment_weight);
+		planes[i].applyForce(cohesion, cohesion_weight);
 		// ok so basically numerically integrate
 		// a = dv / dt
 		// dv = a * dt
@@ -116,8 +128,33 @@ void Flock::update() {
 	}
 }
 
-void Flock::paper_plane::apply_force(ofVec3f force, float scale) {
+void Flock::paper_plane::applyForce(ofVec3f force, float scale) {
 	acceleration += force.limit(max_force).scale(scale);
+}
+
+void Flock::binRegister(int index) {
+	paper_plane* this_plane = &planes[index];
+	// shift the positions to all be positive to make bin calculation easier
+	// e.g. with a radius of 50, something at -50 will become 0 and something
+	// at 50 will become 100
+	ofVec3f offset_position = this_plane->position + RADIUS_VECTOR;
+	
+	int x = (int)offset_position.x / LATTICE_GRID_SIZE;
+	int y = (int)offset_position.y / LATTICE_GRID_SIZE;
+	int z = (int)offset_position.z / LATTICE_GRID_SIZE;
+	
+	// if the plane is at the very farthest edge, it'd technically be part of the next cell (beyond
+	// the grid) so we make sure it stays in bounds
+	// e.g. if it was at (100, 100, 100) and the grid size is 10 it'd be placed at [10][10][10]
+	// but the lattice goes from 0 to 9, so it needs to be in the 9th cell
+	if (x == LATTICE_SUBDIVS) { x--; }
+	if (y == LATTICE_SUBDIVS) { y--; }
+	if (z == LATTICE_SUBDIVS) { z--; }
+	
+	// a sanity check
+	if (x >= 0 && x < LATTICE_SUBDIVS && y >= 0 && y < LATTICE_SUBDIVS && z >= 0) {
+		bins[x][y][z].push_back(this_plane);
+	}
 }
 
 ofVec3f Flock::separate(int index) {
@@ -210,19 +247,19 @@ void Flock::wrap(int index) {
 	// there's probably a fix for that but this isn't that horrible
 	if (this_plane->position.x < -MAX_RADIUS) {
 		this_plane->position.x = MAX_RADIUS;
-	}			  
+	}
 	if (this_plane->position.x > MAX_RADIUS) {
 		this_plane->position.x = -MAX_RADIUS;
-	}			  
+	}
 	if (this_plane->position.y < -MAX_RADIUS) {
 		this_plane->position.y = MAX_RADIUS;
-	}			  
+	}
 	if (this_plane->position.y > MAX_RADIUS) {
 		this_plane->position.y = -MAX_RADIUS;
-	}			  
+	}
 	if (this_plane->position.z < -MAX_RADIUS) {
 		this_plane->position.z = MAX_RADIUS;
-	}			  
+	}
 	if (this_plane->position.z > MAX_RADIUS) {
 		this_plane->position.z = -MAX_RADIUS;
 	}

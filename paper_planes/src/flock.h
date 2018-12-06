@@ -3,17 +3,26 @@
 #include "ofxAssimpModelLoader.h"
 
 const int MAX_RADIUS = 50;
-const int POSITION_DISPERSION = 80;
-const int VELOCITY_DISPERSION = 1;
-const int LATTICE_SIZE = 10;
+const int POSITION_DISPERSION = MAX_RADIUS * 2;
+const int VELOCITY_DISPERSION = Flock::max_speed;
+
+// how many subdivisions to make
+const int LATTICE_SUBDIVS = 10;
+// the actual size of a cell in pixels (or whatever units this thing uses)
+const float LATTICE_GRID_SIZE = (MAX_RADIUS * 2) / LATTICE_SUBDIVS;
+
 const ofVec3f ZERO_VECTOR;
+const ofVec3f RADIUS_VECTOR(MAX_RADIUS); // used to offset positions for bin calculations
+
+// 3d grid type (forgive me)
+template<typename T> using Lattice = array<array<array<T, LATTICE_SUBDIVS>, LATTICE_SUBDIVS>, LATTICE_SUBDIVS>;
 
 class Flock : public ofNode {
 	struct paper_plane {
 		ofVec3f position;
 		ofVec3f velocity;
 		ofVec3f acceleration;
-		void apply_force(ofVec3f force, float scale=1.0);
+		void applyForce(ofVec3f force, float scale=1.0);
 	};
 
 	ofVec3f separate(int index);
@@ -23,6 +32,16 @@ class Flock : public ofNode {
 	void wrap(int index);
 	ofVec3f seek(int index, ofVec3f target);
 	
+	// this unholy type represents the 3d lattice of bins in which
+	// paper_planes exist in. it's a 3d grid of pointers so we can
+	// get the actual specific instances of paper_planes to use
+	// each cell in the lattice has a list of paper_plane pointers
+	Lattice<vector<paper_plane*>> bins;
+
+	void binRegister(int index);
+
+	int n_planes_;
+
 	ofConePrimitive cone;
 	ofxAssimpModelLoader model;
 
