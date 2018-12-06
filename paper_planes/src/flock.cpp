@@ -150,10 +150,15 @@ void Flock::binRegister(int index) {
 	if (x == LATTICE_SUBDIVS) { x--; }
 	if (y == LATTICE_SUBDIVS) { y--; }
 	if (z == LATTICE_SUBDIVS) { z--; }
+	// same idea but in the negative direction (just in case)
+	if (x == -1) { x++; }
+	if (y == -1) { y++; }
+	if (z == -1) { z++; }
 	
-	// a sanity check
-	if (x >= 0 && x < LATTICE_SUBDIVS && y >= 0 && y < LATTICE_SUBDIVS && z >= 0) {
+	// another sanity check
+	if (x >= 0 && x < LATTICE_SUBDIVS && y >= 0 && y < LATTICE_SUBDIVS && z >= 0 && z < LATTICE_SUBDIVS) {
 		bins[x][y][z].push_back(this_plane);
+		//cout << "Plane added to bin (" << x << " " << y << " " << z << ")" << endl;
 	}
 }
 

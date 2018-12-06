@@ -4,7 +4,7 @@
 
 const int MAX_RADIUS = 50;
 const int POSITION_DISPERSION = MAX_RADIUS * 2;
-const int VELOCITY_DISPERSION = Flock::max_speed;
+const int VELOCITY_DISPERSION = 5;
 
 // how many subdivisions to make
 const int LATTICE_SUBDIVS = 10;
@@ -14,7 +14,6 @@ const float LATTICE_GRID_SIZE = (MAX_RADIUS * 2) / LATTICE_SUBDIVS;
 const ofVec3f ZERO_VECTOR;
 const ofVec3f RADIUS_VECTOR(MAX_RADIUS); // used to offset positions for bin calculations
 
-// 3d grid type (forgive me)
 template<typename T> using Lattice = array<array<array<T, LATTICE_SUBDIVS>, LATTICE_SUBDIVS>, LATTICE_SUBDIVS>;
 
 class Flock : public ofNode {
