@@ -29,8 +29,6 @@ class Flock : public ofNode {
 	ofVec3f separate(paper_plane* plane, vector<paper_plane*> &cell);
 	ofVec3f align(paper_plane* plane, vector<paper_plane*> &cell);
 	ofVec3f cohere(paper_plane* plane, vector<paper_plane*> &cell);
-	ofVec3f cohere(int index);
-	ofVec3f seek(int index, ofVec3f target);
 	ofVec3f bound(int index);
 	void wrap(int index);
 	ofVec3f seek(paper_plane* plane, ofVec3f target);
