@@ -24,6 +24,13 @@ class Flock : public ofNode {
 		ofVec3f velocity;
 		ofVec3f acceleration;
 		void applyForce(ofVec3f force, float scale=1.0);
+		float max_speed = 5.0f;
+		float max_force = 1.0f;
+	};
+
+	struct predator : paper_plane {
+		float max_speed = 10.0f;
+		float max_force = 2.0f;
 	};
 
 	ofVec3f separate(paper_plane* plane, vector<paper_plane*> &cell);
@@ -32,6 +39,7 @@ class Flock : public ofNode {
 	ofVec3f bound(paper_plane* plane);
 	void wrap(paper_plane* plane);
 	ofVec3f seek(paper_plane* plane, ofVec3f target);
+	ofVec3f repel(paper_plane* plane, ofVec3f obstable, float radius);
 	
 	// this unholy type represents the 3d lattice of bins in which
 	// paper_planes exist in. it's a 3d grid of pointers so we can
@@ -51,13 +59,11 @@ class Flock : public ofNode {
 public: 
 	Flock();
 	~Flock();
-	void init(int n_planes);
+	void init(int n_planes, int n_predators);
 	void customDraw(); // overridden virtual method
 	ofLight light;
 
 	static float desired_separation;
-	static float max_speed;
-	static float max_force;
 	static float neighbor_search_radius;
 	static float sim_speed;
 	static bool wraparound;
@@ -70,4 +76,5 @@ public:
 protected:
 	void update();
 	vector<paper_plane*> planes;
+	vector<paper_plane*> predators;
 };

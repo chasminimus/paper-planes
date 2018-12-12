@@ -16,8 +16,6 @@ Flock::~Flock() {
 
 //flock system variables
 float Flock::desired_separation = 5;
-float Flock::max_speed = 5;
-float Flock::max_force = 0.5;
 float Flock::neighbor_search_radius = 10; //TODO: this might be irrelevant with binning now
 float Flock::sim_speed = 4;
 bool Flock::wraparound = false;
@@ -26,9 +24,9 @@ bool Flock::wraparound = false;
 float Flock::separation_weight = 1.5;
 float Flock::alignment_weight = 1.2;
 float Flock::cohesion_weight = 1.0;
-float Flock::bounding_weight = 1.15;
+float Flock::bounding_weight = 1.5;
 
-void Flock::init(int n_planes) {
+void Flock::init(int n_planes, int n_predators) {
 	n_planes_ = n_planes;
 	if (planes.size() != 0) {
 		ofLogWarning("Flock") << "Flock already initialized!?";
@@ -51,11 +49,16 @@ void Flock::init(int n_planes) {
 		velocity.z = (ofRandom(1.0f) - 0.5f) * VELOCITY_DISPERSION;
 		
 		paper_plane* plane = new paper_plane();
+
 		plane->position = position;
 		plane->velocity = velocity;
 		plane->acceleration = acceleration;
 
 		planes.push_back(plane);
+
+		if (i > n_planes - n_predators) {
+			predators.push_back(new predator());
+		}
 	}
 }
 
@@ -147,7 +150,7 @@ void Flock::update() {
 		// v_new = v_old + dv
 		plane->velocity += plane->acceleration * dt;
 		// cap the speed so they don't get outta control
-		plane->velocity.limit(max_speed);
+		plane->velocity.limit(plane->max_speed);
 		plane->position += plane->velocity * dt;
 		// reset the acceleration each frame
 		plane->acceleration *= 0;
@@ -216,7 +219,7 @@ ofVec3f Flock::separate(paper_plane* plane, vector<paper_plane*> &cell) {
 		//check if too close to other boid
 		if (distance > 0 && distance < desired_separation * desired_separation) {
 			//create vector pointing away from it
-			diff = ofVec3f(plane->position - other->position);
+			diff = plane->position - other->position;
 			diff.normalize();
 			diff /= distance;
 			steer += diff;
@@ -229,7 +232,7 @@ ofVec3f Flock::separate(paper_plane* plane, vector<paper_plane*> &cell) {
 	}
 	//steering = desired - velocity
 	if (steer.lengthSquared() > 0) {
-		steer.scale(max_speed);
+		steer.scale(plane->max_speed);
 		steer - plane->velocity;
 	}
 	return steer;
@@ -247,7 +250,7 @@ ofVec3f Flock::align(paper_plane* plane, vector<paper_plane*> &cell) {
 	}
 	if (count > 0) {
 		velocity_sum /= count;
-		velocity_sum.scale(max_speed);
+		velocity_sum.scale(plane->max_speed);
 		return velocity_sum - plane->velocity;
 	}
 	else {
@@ -309,7 +312,23 @@ void Flock::wrap(paper_plane* plane) {
 
 ofVec3f Flock::seek(paper_plane* plane, ofVec3f target) {
 	ofVec3f desired = target - plane->position;
-	desired.scale(max_speed);
+	desired.scale(plane->max_speed);
 	ofVec3f steer = desired - plane->velocity;
 	return steer;
 }
+
+ofVec3f Flock::repel(paper_plane* plane, ofVec3f obstacle, float radius) {
+	//Force that drives boid away from obstacle.
+	ofVec3f repel;
+	ofVec3f fut_pos = plane->position + plane->velocity; // future position for accuracy
+	float distance = plane->position.distance(obstacle);
+
+	if (distance <= radius) {
+		repel = plane->position - obstacle;
+		repel.normalize();
+		if (distance != 0) { //Don't divide by zero.
+			float scale = 1.0 / distance; //The closer to the obstacle, the stronger the force.
+			repel.scale(scale);
+		}
+	}
+	return repel;

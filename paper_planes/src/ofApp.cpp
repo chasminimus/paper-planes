@@ -48,7 +48,7 @@ void ofApp::setup() {
 	s_desired_separation->bind(Flock::desired_separation);
 	s_neighbor_radius->bind(Flock::neighbor_search_radius);
 
-	node_paper_planes.init(500);
+	node_paper_planes.init(50, 10);
 }
 
 //--------------------------------------------------------------
