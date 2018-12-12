@@ -332,3 +332,4 @@ ofVec3f Flock::repel(paper_plane* plane, ofVec3f obstacle, float radius) {
 		}
 	}
 	return repel;
+}
