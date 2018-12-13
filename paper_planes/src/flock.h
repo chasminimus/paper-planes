@@ -58,6 +58,7 @@ class Flock : public ofNode {
 	Lattice<vector<paper_plane*>> bins;
 
 	// bin-lattice spacial subdivision methods
+	// indexes planes into bins
 	void binRegister(paper_plane* plane);
 	// returns the list of planes in neighboring cells
 	vector<paper_plane*> aggregrateNeighborCells(int i, int j, int k);
@@ -65,13 +66,14 @@ class Flock : public ofNode {
 	// drawing stuff
 	void draw_velocity(paper_plane* plane);
 	void draw_plane(paper_plane* plane);
-	meshNode plane_model;
+	ofxMeshNode plane_model;
 	ofLight light;
 
 public: 
 	Flock();
 	~Flock();
 
+	// populate the flock with the number of planes and predators
 	void init(int n_planes, int n_predators);
 	void customDraw(); // overridden virtual method
 

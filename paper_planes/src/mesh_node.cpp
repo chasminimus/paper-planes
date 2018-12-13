@@ -1,12 +1,12 @@
 #include "mesh_node.h"
 
-meshNode::meshNode() {
+ofxMeshNode::ofxMeshNode() {
 }
 
-meshNode::meshNode(ofMesh mesh) {
+ofxMeshNode::ofxMeshNode(ofMesh mesh) {
 	mesh_ = mesh;
 }
 
-void meshNode::customDraw() {
+void ofxMeshNode::customDraw() {
 	mesh_.draw();
 }

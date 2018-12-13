@@ -20,7 +20,7 @@ I've done flocking before in just 2D using JavaScript and p5.js, so the ideas at
 
 ### Libraries
 
-- ofx3DModelLoader? (use a paper plane model instead of drawing it with primitves)
+- ofxAssimpModelLoader (use a paper plane model instead of drawing it with primitves)
 - ~~ofxGui for control sliders/options~~
 - ofxDatGui for _nice_ controls/sliders
 

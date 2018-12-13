@@ -4,7 +4,7 @@ Flock::Flock() {
 	light.setAmbientColor(ofColor(225));
 	ofxAssimpModelLoader model;
 	model.loadModel("model/paper_plane.obj");
-	plane_model = meshNode(model.getMesh(0)); // this lets us escape the horrific assimpmodel rotation system
+	plane_model = ofxMeshNode(model.getMesh(0)); // this lets us escape the horrific assimpmodel rotation system
 }
 
 Flock::~Flock() {
