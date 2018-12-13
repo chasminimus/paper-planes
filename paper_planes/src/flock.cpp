@@ -76,6 +76,7 @@ void Flock::customDraw() {
 
 	for (paper_plane* plane : planes) {
 		draw_velocity(plane);
+		cone.resetTransform();
 		cone.setPosition(plane->position);
 		cone.lookAt(plane->position + plane->velocity.getNormalized());
 
@@ -87,7 +88,6 @@ void Flock::customDraw() {
 		draw_velocity(pred);
 		cone.setPosition(pred->position);
 		cone.lookAt(pred->position + pred->velocity.getNormalized());
-
 		ofSetColor(255.0f, 0.0f, 0.0f);
 		cone.draw();
 	}
@@ -100,7 +100,6 @@ void Flock::customDraw() {
 void Flock::draw_velocity(paper_plane* plane) {
 	ofVec3f arrowTail = plane->position;
 	ofVec3f arrowHead = arrowTail + plane->velocity.getNormalized();
-
 	ofDrawArrow(arrowTail, arrowHead, 0.0f);
 }
 

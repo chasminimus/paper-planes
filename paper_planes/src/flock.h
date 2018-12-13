@@ -31,7 +31,7 @@ class Flock : public ofNode {
 		ofVec3f velocity;
 		ofVec3f acceleration;
 		void applyForce(ofVec3f force, float scale = 1.0);
-		virtual float get_max_speed() { return max_speed_; };
+		virtual float get_max_speed() { return max_speed_; }; // epic polymorphism style
 		virtual float get_max_force() { return max_force_; };
 	};
 
@@ -74,10 +74,10 @@ public:
 	void customDraw(); // overridden virtual method
 
 	// bound control variables
-	static float desired_separation;
-	static float neighbor_search_radius;
-	static float sim_speed;
-	static bool wraparound;
+	static float desired_separation; // planes within this distance will invoke the force
+	static float neighbor_search_radius; // planes within this radius are used in calculation
+	static float sim_speed; // multiplied with the timestep to increase the speed of everything
+	static bool wraparound; // whether or not to use a sphere or allow position looping
 
 	// bound weight variables
 	static float separation_weight;

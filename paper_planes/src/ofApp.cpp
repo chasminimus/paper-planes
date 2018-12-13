@@ -5,9 +5,7 @@ ofxAssimpModelLoader model;
 //--------------------------------------------------------------
 void ofApp::setup() {
 	ofEnableSmoothing();
-	
-	//model.loadModel("model/paper_plane.obj");
-	
+		
 	// set up camera
 	camEasy.setTarget(node_paper_planes);
 	camEasy.setDistance(25);
@@ -62,10 +60,15 @@ void ofApp::update() {
 void ofApp::draw() {
 	//ofBackground(50, 50, 50, 0);
 	camEasy.begin();
+	
 	ofSetColor(255, 255, 255, 255);
 	//ofDrawRotationAxes(MAX_RADIUS, 0.1f);
-	ofDrawGrid((float)MAX_RADIUS / ((float)LATTICE_SUBDIVS / 2), (float)LATTICE_SUBDIVS / 2, true, true, true, true);
+	//ofDrawGrid((float)MAX_RADIUS / ((float)LATTICE_SUBDIVS / 2), (float)LATTICE_SUBDIVS / 2, true, true, true, true);
+	
+	ofEnableDepthTest();
 	node_paper_planes.customDraw();
+	ofDisableDepthTest();
+
 	camEasy.end();
 }
 
