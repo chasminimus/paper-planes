@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxAssimpModelLoader.h"
 #include "ofxDatGui.h"
 #include "flock.h"
 

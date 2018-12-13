@@ -31,6 +31,9 @@
     <ClCompile Include="src\flock.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\mesh_node.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="src">
@@ -294,6 +297,9 @@
       <Filter>addons\ofxDatGui\src\themes</Filter>
     </ClInclude>
     <ClInclude Include="src\flock.h">
+      <Filter>src</Filter>
+    </ClInclude>
+    <ClInclude Include="src\mesh_node.h">
       <Filter>src</Filter>
     </ClInclude>
   </ItemGroup>

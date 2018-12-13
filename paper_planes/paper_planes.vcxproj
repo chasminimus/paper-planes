@@ -181,6 +181,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\mesh_node.cpp" />
     <ClCompile Include="src\ofApp.cpp" />
     <ClCompile Include="..\..\..\..\..\Code\openFrameworks\of_v0.10.0_vs2017_release\addons\ofxAssimpModelLoader\src\ofxAssimpAnimation.cpp" />
     <ClCompile Include="..\..\..\..\..\Code\openFrameworks\of_v0.10.0_vs2017_release\addons\ofxAssimpModelLoader\src\ofxAssimpMeshHelper.cpp" />
@@ -192,6 +193,7 @@
     <ClCompile Include="src\flock.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\mesh_node.h" />
     <ClInclude Include="src\ofApp.h" />
     <ClInclude Include="..\..\..\..\..\Code\openFrameworks\of_v0.10.0_vs2017_release\addons\ofxAssimpModelLoader\src\ofxAssimpAnimation.h" />
     <ClInclude Include="..\..\..\..\..\Code\openFrameworks\of_v0.10.0_vs2017_release\addons\ofxAssimpModelLoader\src\ofxAssimpMeshHelper.h" />

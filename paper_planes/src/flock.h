@@ -1,6 +1,7 @@
 #pragma once
 #include "ofMain.h"
 #include "ofxAssimpModelLoader.h"
+#include "mesh_node.h"
 
 const int MAX_RADIUS = 40;
 const int POSITION_DISPERSION = MAX_RADIUS * 2;
@@ -63,7 +64,8 @@ class Flock : public ofNode {
 
 	// drawing stuff
 	void draw_velocity(paper_plane* plane);
-	ofConePrimitive cone;
+	void draw_plane(paper_plane* plane);
+	meshNode plane_model;
 	ofLight light;
 
 public: 

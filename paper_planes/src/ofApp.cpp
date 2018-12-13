@@ -1,7 +1,5 @@
 #include "ofApp.h"
 
-ofxAssimpModelLoader model;
-
 //--------------------------------------------------------------
 void ofApp::setup() {
 	ofEnableSmoothing();

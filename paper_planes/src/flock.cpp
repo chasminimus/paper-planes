@@ -2,10 +2,9 @@
 
 Flock::Flock() {
 	light.setAmbientColor(ofColor(0, 0, 0));
-	cone.set(.5f, 1.0f);
-	//cone.tiltDeg(90.0f);
-	//cone.rollDeg(180.0f);
-	//cone.panDeg(90.0f);
+	ofxAssimpModelLoader model;
+	model.loadModel("model/paper_plane.obj");
+	plane_model = meshNode(model.getMesh(0)); // this lets us escape the horrific assimpmodel rotation system
 }
 
 Flock::~Flock() {
@@ -19,7 +18,7 @@ Flock::~Flock() {
 
 //flock system variables
 float Flock::desired_separation = 5;
-float Flock::neighbor_search_radius = 10; //TODO: this might be irrelevant with binning now
+float Flock::neighbor_search_radius = 10;
 float Flock::sim_speed = 4;
 bool Flock::wraparound = false;
 
@@ -75,21 +74,15 @@ void Flock::customDraw() {
 	light.setPosition(ZERO_VECTOR);
 
 	for (paper_plane* plane : planes) {
-		draw_velocity(plane);
-		cone.resetTransform();
-		cone.setPosition(plane->position);
-		cone.lookAt(plane->position + plane->velocity.getNormalized());
-
+		//draw_velocity(plane);
 		ofSetColor(255.0f, 255.0f, 255.0f);
-		cone.draw();
+		draw_plane(plane);
 	}
 
 	for (paper_plane* pred : predators) {
-		draw_velocity(pred);
-		cone.setPosition(pred->position);
-		cone.lookAt(pred->position + pred->velocity.getNormalized());
+		//draw_velocity(pred);
 		ofSetColor(255.0f, 0.0f, 0.0f);
-		cone.draw();
+		draw_plane(pred);
 	}
 
 	light.disable();
@@ -101,6 +94,12 @@ void Flock::draw_velocity(paper_plane* plane) {
 	ofVec3f arrowTail = plane->position;
 	ofVec3f arrowHead = arrowTail + plane->velocity.getNormalized();
 	ofDrawArrow(arrowTail, arrowHead, 0.0f);
+}
+
+void Flock::draw_plane(paper_plane* plane) {
+	plane_model.setPosition(plane->position);
+	plane_model.lookAt(plane->position + plane->velocity.getNormalized(), ofVec3f(0,0,1));
+	plane_model.draw();
 }
 
 // TODO: extract the update loops into methods belonging to paper_plane and predator
