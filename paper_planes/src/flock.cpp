@@ -12,6 +12,9 @@ Flock::~Flock() {
 	for (paper_plane* plane : planes) {
 		delete plane;
 	}
+	for (paper_plane* pred : predators) {
+		delete pred;
+	}
 }
 
 //flock system variables
@@ -27,7 +30,6 @@ float Flock::cohesion_weight = 1.0;
 float Flock::bounding_weight = 1.5;
 
 void Flock::init(int n_planes, int n_predators) {
-	n_planes_ = n_planes;
 	if (planes.size() != 0) {
 		ofLogWarning("Flock") << "Flock already initialized!?";
 		planes.clear();
@@ -71,15 +73,21 @@ void Flock::customDraw() {
 	light.enable();
 	light.setPosition(ZERO_VECTOR);
 
-	ofVec3f arrowTail, arrowHead;
 	for (paper_plane* plane : planes) {
-		arrowTail = plane->position;
-		arrowHead = arrowTail + plane->velocity.normalized();
-		
-		ofDrawArrow(arrowTail, arrowHead, 0.0f);
+		draw_velocity(plane);
 		cone.setPosition(plane->position);
-		cone.lookAt(plane->position + plane->velocity.normalized());
+		cone.lookAt(plane->position + plane->velocity.getNormalized());
 
+		ofSetColor(255.0f, 255.0f, 255.0f);
+		cone.draw();
+	}
+
+	for (paper_plane* pred : predators) {
+		draw_velocity(pred);
+		cone.setPosition(pred->position);
+		cone.lookAt(pred->position + pred->velocity.getNormalized());
+
+		ofSetColor(255.0f, 0.0f, 0.0f);
 		cone.draw();
 	}
 
@@ -88,12 +96,22 @@ void Flock::customDraw() {
 	ofPopStyle();
 }
 
+void Flock::draw_velocity(paper_plane* plane) {
+	ofVec3f arrowTail = plane->position;
+	ofVec3f arrowHead = arrowTail + plane->velocity.getNormalized();
+
+	ofDrawArrow(arrowTail, arrowHead, 0.0f);
+}
+
+// TODO: extract the update loops into methods belonging to paper_plane and predator
+// however, this requires moving the force rules into those classes too
 void Flock::update() {
 	// force vectors
 	ofVec3f bounding;
 	ofVec3f separation;
 	ofVec3f alignment;
 	ofVec3f cohesion;
+	ofVec3f flee;
 
 	// time differential used for updating vectors
 	float dt = ofGetLastFrameTime() * sim_speed;
@@ -126,7 +144,12 @@ void Flock::update() {
 					separation = separate(plane, cell_aggregate);
 					alignment = align(plane, cell_aggregate);
 					cohesion = cohere(plane, cell_aggregate);
-					
+
+					for (paper_plane* pred : predators) {
+						flee = repel(plane, pred->position, neighbor_search_radius);
+						plane->applyForce(flee);
+					}
+
 					plane->applyForce(separation, separation_weight);
 					plane->applyForce(alignment, alignment_weight);
 					plane->applyForce(cohesion, cohesion_weight);
@@ -135,6 +158,7 @@ void Flock::update() {
 		}
 	}
 
+	// for all the planes (this has to be done separately from cells since planes sometimes go out of bounds if not wrapping around
 	for (paper_plane* plane : planes) {
 		if (wraparound) {
 			wrap(plane);
@@ -143,22 +167,46 @@ void Flock::update() {
 			bounding = bound(plane);
 			plane->applyForce(bounding, bounding_weight);
 		}
-		
+
 		// ok so basically numerically integrate
 		// a = dv / dt
 		// dv = a * dt
 		// v_new = v_old + dv
 		plane->velocity += plane->acceleration * dt;
 		// cap the speed so they don't get outta control
-		plane->velocity.limit(plane->max_speed);
+		plane->velocity.limit(plane->get_max_speed());
 		plane->position += plane->velocity * dt;
 		// reset the acceleration each frame
 		plane->acceleration *= 0;
 	}
+
+	// for the predators
+	for (paper_plane* pred : predators) {
+		if (wraparound) {
+			wrap(pred);
+		}
+		else {
+			bounding = bound(pred);
+			pred->applyForce(bounding, bounding_weight);
+		}
+
+		separation = separate(pred, predators);
+		alignment = align(pred, planes);
+		cohesion = cohere(pred, planes);
+
+		pred->applyForce(separation, separation_weight);
+		pred->applyForce(alignment, alignment_weight);
+		pred->applyForce(cohesion, cohesion_weight * 2);
+
+		pred->velocity += pred->acceleration * dt;
+		pred->velocity.limit(pred->get_max_speed());
+		pred->position += pred->velocity * dt;
+		pred->acceleration *= 0;
+	}
 }
 
 void Flock::paper_plane::applyForce(ofVec3f force, float scale) {
-	acceleration += force.limit(max_force).scale(scale);
+	acceleration += force.limit(get_max_force()).scale(scale);
 }
 
 void Flock::binRegister(paper_plane* plane) {
@@ -215,7 +263,7 @@ ofVec3f Flock::separate(paper_plane* plane, vector<paper_plane*> &cell) {
 	int count = 0;
 
 	for (paper_plane* other : cell) {
-		float distance = plane->position.distanceSquared(other->position);
+		float distance = plane->position.squareDistance(other->position);
 		//check if too close to other boid
 		if (distance > 0 && distance < desired_separation * desired_separation) {
 			//create vector pointing away from it
@@ -232,7 +280,7 @@ ofVec3f Flock::separate(paper_plane* plane, vector<paper_plane*> &cell) {
 	}
 	//steering = desired - velocity
 	if (steer.lengthSquared() > 0) {
-		steer.scale(plane->max_speed);
+		steer.scale(plane->get_max_speed());
 		steer - plane->velocity;
 	}
 	return steer;
@@ -242,7 +290,7 @@ ofVec3f Flock::align(paper_plane* plane, vector<paper_plane*> &cell) {
 	int count = 0;
 	ofVec3f velocity_sum;
 	for (paper_plane* other : cell) {
-		float distance = plane->position.distanceSquared(other->position);
+		float distance = plane->position.squareDistance(other->position);
 		if (distance > 0 && distance < neighbor_search_radius * neighbor_search_radius) {
 			velocity_sum += other->velocity;
 			count++;
@@ -250,7 +298,7 @@ ofVec3f Flock::align(paper_plane* plane, vector<paper_plane*> &cell) {
 	}
 	if (count > 0) {
 		velocity_sum /= count;
-		velocity_sum.scale(plane->max_speed);
+		velocity_sum.scale(plane->get_max_speed());
 		return velocity_sum - plane->velocity;
 	}
 	else {
@@ -262,7 +310,7 @@ ofVec3f Flock::cohere(paper_plane* plane, vector<paper_plane*> &cell) {
 	ofVec3f position_sum;
 	int count = 0;
 	for (paper_plane* other : cell) {
-		float distance = plane->position.distanceSquared(other->position);
+		float distance = plane->position.squareDistance(other->position);
 		if (distance > 0 && distance < neighbor_search_radius * neighbor_search_radius) {
 			position_sum += other->position;
 			count++;
@@ -284,6 +332,29 @@ ofVec3f Flock::bound(paper_plane* plane) {
 		steer = -plane->position / MAX_RADIUS;
 	}
 	return steer;
+}
+
+ofVec3f Flock::seek(paper_plane* plane, ofVec3f target) {
+	ofVec3f desired = target - plane->position;
+	desired.scale(plane->get_max_speed());
+	ofVec3f steer = desired - plane->velocity;
+	return steer;
+}
+
+ofVec3f Flock::repel(paper_plane* plane, ofVec3f obstacle, float radius) {
+	ofVec3f repel;
+	ofVec3f fut_pos = plane->position + plane->velocity; // future position for accuracy
+	float distance = plane->position.distance(obstacle);
+
+	if (distance <= radius) {
+		repel = plane->position - obstacle;
+		repel.normalize();
+		if (distance != 0) { //Don't divide by zero.
+			float scale = 1.0 / distance; //The closer to the obstacle, the stronger the force.
+			repel.scale(scale);
+		}
+	}
+	return repel;
 }
 
 void Flock::wrap(paper_plane* plane) {
@@ -308,28 +379,4 @@ void Flock::wrap(paper_plane* plane) {
 	if (plane->position.z > MAX_RADIUS) {
 		plane->position.z = -MAX_RADIUS;
 	}
-}
-
-ofVec3f Flock::seek(paper_plane* plane, ofVec3f target) {
-	ofVec3f desired = target - plane->position;
-	desired.scale(plane->max_speed);
-	ofVec3f steer = desired - plane->velocity;
-	return steer;
-}
-
-ofVec3f Flock::repel(paper_plane* plane, ofVec3f obstacle, float radius) {
-	//Force that drives boid away from obstacle.
-	ofVec3f repel;
-	ofVec3f fut_pos = plane->position + plane->velocity; // future position for accuracy
-	float distance = plane->position.distance(obstacle);
-
-	if (distance <= radius) {
-		repel = plane->position - obstacle;
-		repel.normalize();
-		if (distance != 0) { //Don't divide by zero.
-			float scale = 1.0 / distance; //The closer to the obstacle, the stronger the force.
-			repel.scale(scale);
-		}
-	}
-	return repel;
 }
