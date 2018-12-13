@@ -2,14 +2,14 @@
 #include "ofMain.h"
 #include "ofxAssimpModelLoader.h"
 
-const int MAX_RADIUS = 50;
+const int MAX_RADIUS = 40;
 const int POSITION_DISPERSION = MAX_RADIUS * 2;
 const int VELOCITY_DISPERSION = 5;
 
 // how many subdivisions to make (must be able to divide MAX_RADIUS*2)
 // - better if even
 // - set to 1 to effectively disable subdividing
-const int LATTICE_SUBDIVS = 4;
+const int LATTICE_SUBDIVS = 6;
 // the actual size of a cell in pixels (or whatever units this thing uses)
 const float LATTICE_GRID_SIZE = (MAX_RADIUS * 2) / LATTICE_SUBDIVS;
 
@@ -84,6 +84,7 @@ public:
 	static float alignment_weight;
 	static float cohesion_weight;
 	static float bounding_weight;
+	static float flee_weight;
 
 protected:
 	void update();

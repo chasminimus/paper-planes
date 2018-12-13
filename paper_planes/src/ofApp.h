@@ -37,6 +37,7 @@ class ofApp : public ofBaseApp{
 		ofxDatGuiSlider* s_alignment;
 		ofxDatGuiSlider* s_cohesion;
 		ofxDatGuiSlider* s_bounding;
+		ofxDatGuiSlider* s_flee;
 
 		// other controls
 		ofxDatGuiSlider* s_speed;

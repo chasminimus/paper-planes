@@ -26,12 +26,14 @@ void ofApp::setup() {
 	s_alignment = f_weights->addSlider("Alignment", 0, 5.0);
 	s_cohesion = f_weights->addSlider("Cohesion", 0, 5.0);
 	s_bounding = f_weights->addSlider("Bounding", 0, 5.0);
+	s_flee = f_weights->addSlider("Flee", 0, 5.0);
 
 	// weight slider bindings
 	s_separation->bind(Flock::separation_weight);
 	s_alignment->bind(Flock::alignment_weight);
 	s_cohesion->bind(Flock::cohesion_weight);
 	s_bounding->bind(Flock::bounding_weight);
+	s_flee->bind(Flock::flee_weight);
 
 	// other controls
 	s_speed = gui->addSlider("Simluation Speed", 0, 10.0);

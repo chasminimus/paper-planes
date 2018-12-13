@@ -28,6 +28,7 @@ float Flock::separation_weight = 1.5;
 float Flock::alignment_weight = 1.2;
 float Flock::cohesion_weight = 1.0;
 float Flock::bounding_weight = 1.5;
+float Flock::flee_weight = 1.5;
 
 void Flock::init(int n_planes, int n_predators) {
 	if (planes.size() != 0) {
@@ -128,8 +129,8 @@ void Flock::update() {
 		}
 	}
 
+	// put each paper_plane in the correct bin
 	for (paper_plane* plane : planes) {
-		// put each paper_plane in the correct bin
 		binRegister(plane);
 	}
 
@@ -147,7 +148,7 @@ void Flock::update() {
 
 					for (paper_plane* pred : predators) {
 						flee = repel(plane, pred->position, neighbor_search_radius);
-						plane->applyForce(flee);
+						plane->applyForce(flee, flee_weight);
 					}
 
 					plane->applyForce(separation, separation_weight);
