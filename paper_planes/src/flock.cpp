@@ -348,8 +348,8 @@ ofVec3f Flock::repel(paper_plane* plane, ofVec3f obstacle, float radius) {
 	if (distance <= radius) {
 		repel = plane->position - obstacle;
 		repel.normalize();
-		if (distance != 0) { //Don't divide by zero.
-			float scale = 1.0 / distance; //The closer to the obstacle, the stronger the force.
+		if (distance != 0) {
+			float scale = 1.0 / distance; // if you're closer to the obstacle, the repel is stronger
 			repel.scale(scale);
 		}
 	}
