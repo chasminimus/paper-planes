@@ -56,7 +56,7 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-	//ofBackground(50, 50, 50, 0);
+	ofBackground(SKY_BLUE);
 	camEasy.begin();
 	
 	ofSetColor(255, 255, 255, 255);
