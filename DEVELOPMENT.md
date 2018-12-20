@@ -2,7 +2,7 @@
 
 ## Setup
 
-I set out by trying to understand how to set up a 3D system in OpenFrameworks. It turns out, one of the examples they included does just that. The example was a swarm of particles bound by the spring force with different camera views. I mimicked the class structure of this example in my initial design of the project: there is a `Flock` class that subclasses the `ofNode` class so it has basic drawing capabilities as well as other nice features that nodes can have, such as the ability to be focused on by an `ofEasyCam`. The `Flock` class has subclasses that hold vectors for position, velocity, and acceleration. 
+I set out by trying to understand how to set up a 3D system in OpenFrameworks. It turns out, one of the examples they included does just that. The example was a swarm of particles bound by the spring force with different camera views. I mimicked the class structure of this example in my initial design of the project: there is a `Flock` class that subclasses the `ofNode` class so it has basic drawing capabilities as well as other nice features that nodes can have, such as the ability to be focused on by an `ofEasyCam`. The `Flock` class has subclasses for the particles which hold vectors for position, velocity, and acceleration.
 
 ## 3D Things in 3D Space
 
@@ -19,7 +19,7 @@ I also discovered that the depth testing needs to be disabled for it to render c
 
 ## Trying (& Failing) to be Efficient
 
-I tried to implement bin-lattice spacial subdivision to increase efficiency. I think all the array operations and loops just kind of counteract that though. It gets slightly better using the bin system at least. Too many makes it even laggier. It works by splitting the region into cells and having the particles only compute using the particles in neighboring cells. I'm also beginning to realize that it might be better to hold a lsit of pointers to particles than just a list of particles for accessing them and passing them to functions.
+I tried to implement bin-lattice spacial subdivision to increase efficiency. I think all the array operations and loops just kind of counteract that though. It gets slightly better using the bin system at least. Too many makes it even laggier. It works by splitting the region into cells and having the particles only compute using the particles in neighboring cells. I'm also beginning to realize that it might be better to hold a list of pointers to particles than just a list of particles for accessing them and passing them to functions.
 
 ## Internal Organization and Predators
 
@@ -27,4 +27,4 @@ I refactored pretty much everything to use pointers to particles instead of thei
 
 ## The End
 
-With all the functionality in place, I finally used the paper plane model I made at the very beginning. The ofxAssimpModelLoader library seemed a little archaic, but I was able to avoid its strange rotation system by taking converting the model to an `ofMesh` using a method the library thankfully had.  I subclassed `ofNode` much like I did in the beginning and stored the mesh there so it could be transformed like a node. The model even looked correct when using `ofNode::lookAt()`! I changed up the background colors, and added documentation and polish.
+With all the functionality in place, I finally used the paper plane model I made at the very beginning. The ofxAssimpModelLoader library seemed a little archaic, but I was able to avoid its strange rotation system by taking converting the model to an `ofMesh` using a method the library thankfully had.  I subclassed `ofNode` much like I did in the beginning and stored the mesh there so it could be transformed like a node. The model even looked correct when using `ofNode::lookAt()`! I changed up the background colors, and added documentation and polish. It also turns out that implementing the bin-lattice spacial subdivision was worth it, I just needed to be running it in release mode.

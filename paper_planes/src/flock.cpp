@@ -23,11 +23,11 @@ float Flock::sim_speed = 4;
 bool Flock::wraparound = false;
 
 //flock rule weights
-float Flock::separation_weight = 1.5;
-float Flock::alignment_weight = 1.2;
+float Flock::separation_weight = 1.25;
+float Flock::alignment_weight = 1.5;
 float Flock::cohesion_weight = 1.0;
-float Flock::bounding_weight = 1.5;
-float Flock::flee_weight = 1.5;
+float Flock::bounding_weight = 2.0;
+float Flock::flee_weight = 1.75;
 
 void Flock::init(int n_planes, int n_predators) {
 	if (planes.size() != 0) {
