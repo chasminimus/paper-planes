@@ -1,6 +1,6 @@
 # Readme
 
-![Paper Planes](https://i.imgur.com/LpOuvEF.png)
+![Paper Planes](https://media.giphy.com/media/SIueu8TsVDjI8ubsIh/giphy.gif)
 
 ## Dependencies
 - ofxAssimpModelLoader
