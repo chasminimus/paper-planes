@@ -1,5 +1,7 @@
 # Readme
 
+![Paper Planes](https://i.imgur.com/LpOuvEF.png)
+
 ## Dependencies
 - ofxAssimpModelLoader
 - ofxDatGui
